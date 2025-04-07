@@ -12,10 +12,10 @@
 // Evaulates a list of statements
 void evaluate(const std::string& user_input, Walker& walker) {
     std::vector<Token> stream = scan_to_tokens(user_input);
-    LOG(INFO) << "Tokens: ";
-    for (const auto& token : stream) {
-        LOG(INFO) << token.repr();
-    }
+    // LOG(INFO) << "Tokens: ";
+    // for (const auto& token : stream) {
+    //     LOG(INFO) << token.repr();
+    // }
 
     std::vector<stmt> statements = parse(stream);
     for (const auto& statement: statements) {

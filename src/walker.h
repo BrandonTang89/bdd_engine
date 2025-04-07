@@ -67,6 +67,26 @@ class Walker {
 
     iter_type new_bdd_node(Bdd_Node node);
 
+    std::vector<std::string> bdd_ordering; // for BDD ordering
+    std::unordered_map<std::string, uint32_t> bdd_ordering_map; // for BDD ordering
+    
+    id_type construct_bdd(const expr& x);
+    id_type get_id(const Bdd_Node& node);
+
+    std::map<std::tuple<id_type, id_type>, id_type> and_memo;
+    id_type rec_apply_and(id_type a, id_type b);
+    id_type and_bdd(id_type a, id_type b);
+
+    std::map<std::tuple<id_type, id_type>, id_type> or_memo;
+    id_type rec_apply_or(id_type a, id_type b);
+    id_type or_bdd(id_type a, id_type b);
+
+    std::map<id_type, id_type> not_memo;
+    id_type rec_apply_not(id_type a);
+    id_type negate_bdd(id_type a);
+
+    std::string bdd_repr(id_type id); 
+
    public:
     Walker() {
         // Initialize the Walker
@@ -83,9 +103,4 @@ class Walker {
 
     void walk(const stmt& statement);
 
-    id_type construct_bdd(const expr& x);
-
-    id_type and_bdd(id_type a, id_type b);
-    id_type or_bdd(id_type a, id_type b);
-    id_type negate_bdd(id_type a);
 };
