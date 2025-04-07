@@ -1,0 +1,6 @@
+[requires]
+abseil/20250127.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
