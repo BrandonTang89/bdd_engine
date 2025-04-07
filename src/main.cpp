@@ -7,9 +7,10 @@
 #include "absl/log/log.h"
 #include "token.h"
 #include "parser.h"
+#include "walker.h"
 
 // Evaulates a list of statements
-void evaluate(const std::string& user_input) {
+void evaluate(const std::string& user_input, Walker& walker) {
     std::vector<Token> stream = scan_to_tokens(user_input);
     LOG(INFO) << "Tokens: ";
     for (const auto& token : stream) {
@@ -19,6 +20,7 @@ void evaluate(const std::string& user_input) {
     std::vector<stmt> statements = parse(stream);
     for (const auto& statement: statements) {
         LOG(INFO) << stmt_repr(statement);
+        walker.walk(statement);
     }
 }
 
@@ -30,6 +32,7 @@ int main() {
     std::cout << "Binary Decision Diagram Engine" << std::endl;
 
     // REPL
+    Walker walker;
     while (true) {
         std::string input;
         std::cout << "> ";
@@ -40,6 +43,6 @@ int main() {
         }
 
         std::cout << "Input: " << input << std::endl;
-        evaluate(input);
+        evaluate(input, walker);
     }
 }

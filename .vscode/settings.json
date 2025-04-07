@@ -41,7 +41,8 @@
         "numbers": "cpp",
         "text_encoding": "cpp",
         "tuple": "cpp",
-        "any": "cpp"
+        "any": "cpp",
+        "unordered_map": "cpp"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/g++-14"
 }
