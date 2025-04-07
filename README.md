@@ -2,6 +2,8 @@
 
 C++ Implementation of Binary Decision Diagrams for Propositional Formulae Manipulation
 
+## Todo
+- 
 
 ## Grammar
 
