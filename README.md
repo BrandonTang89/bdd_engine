@@ -11,9 +11,9 @@ statements:
 
 statement: 
     | 'BVAR' IDENTIFIER ("," IDENTIFIER)* ";"
-    | 'EVAR' IDENTIFIER ("," IDENTIFIER)* ";"
-    | IDENTIFIER "=" expression ";"
+    | 'SET' IDENTIFIER "=" expression ";"
     | DISPLAY expression ";"
+    | expression ";"
 
 expression:
     | conjuct ("|" conjuct)*

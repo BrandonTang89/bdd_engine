@@ -11,6 +11,7 @@ struct Token {
         LAND,
         LOR,
         SEMICOLON,
+        COMMA,
 
         // Single or Double Character Tokens
         EQUAL,
@@ -21,12 +22,12 @@ struct Token {
         // Keywords
         IDENTIFIER,
         BVAR,
+        SET,
         TRUE,
         FALSE,
 
         // Special Keywords (since we don't do functions)
         DISPLAY,
-
     };
 
     Type type;

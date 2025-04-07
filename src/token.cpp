@@ -1,5 +1,15 @@
 #include "token.h"
 
+#include <unordered_map>
+
+const std::unordered_map<std::string, Token::Type> keyword_map = {
+    {"bvar", Token::Type::BVAR},
+    {"set", Token::Type::SET},
+    {"true", Token::Type::TRUE},
+    {"false", Token::Type::FALSE},
+    {"display", Token::Type::DISPLAY},
+};
+
 std::vector<Token> scan_to_tokens(const std::string& source) {
     std::vector<Token> tokens;
     size_t i = 0;
@@ -22,6 +32,9 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
                 break;
             case ';':
                 tokens.emplace_back(Token::Type::SEMICOLON, ";");
+                break;
+            case ',':
+                tokens.emplace_back(Token::Type::COMMA, ",");
                 break;
             case '=':
                 if (i + 1 < source.size() && source[i + 1] == '=') {
@@ -46,14 +59,8 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
                         identifier += c;
                         c = source[++i];
                     }
-                    if (identifier == "bvar") {
-                        tokens.emplace_back(Token::Type::BVAR, identifier);
-                    } else if (identifier == "true") {
-                        tokens.emplace_back(Token::Type::TRUE, identifier);
-                    } else if (identifier == "false") {
-                        tokens.emplace_back(Token::Type::FALSE, identifier);
-                    } else if (identifier == "display") {
-                        tokens.emplace_back(Token::Type::DISPLAY, identifier);
+                    if (keyword_map.find(identifier) != keyword_map.end()) {
+                        tokens.emplace_back(keyword_map.at(identifier), identifier);
                     } else {
                         tokens.emplace_back(Token::Type::IDENTIFIER, identifier);
                     }

@@ -40,7 +40,8 @@
         "cstdlib": "cpp",
         "numbers": "cpp",
         "text_encoding": "cpp",
-        "tuple": "cpp"
+        "tuple": "cpp",
+        "any": "cpp"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/g++-14"
 }

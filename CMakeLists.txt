@@ -12,7 +12,7 @@ list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 # Packages
 find_package(absl)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/token.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/token.cpp src/parser.cpp src/ast.cpp)
 target_link_libraries(${PROJECT_NAME} abseil::abseil)
 
 # Compile Flags
