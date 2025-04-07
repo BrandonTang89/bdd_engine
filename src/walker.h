@@ -2,8 +2,8 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 #include <variant>
 
 #include "ast.h"
@@ -14,7 +14,7 @@ using id_type = uint32_t;
 using bdd_set_type = std::set<Bdd_Node>;
 using iter_type = bdd_set_type::iterator;
 using from_human_map_type = std::map<id_type, iter_type>;  // human_ids -> iter
-using to_human_map_type = std::map<Bdd_Node, id_type>;    // iter -> human_ids
+using to_human_map_type = std::map<Bdd_Node, id_type>;     // iter -> human_ids
 
 struct Bdd_Node {
     enum class Bdd_type {
@@ -61,15 +61,16 @@ class Walker {
     iter_type iter_to_false;
     iter_type iter_to_true;
 
-    std::map<id_type, std::vector<id_type>> bdd_parents;  // for reductions
     std::unordered_map<std::string, Ptype> globals;
     void walk_decl_stmt(const decl_stmt& statement);
+    void walk_assign_stmt(const assign_stmt& statement);
+    void walk_expr_stmt(const expr_stmt& statement);
 
     iter_type new_bdd_node(Bdd_Node node);
 
-    std::vector<std::string> bdd_ordering; // for BDD ordering
-    std::unordered_map<std::string, uint32_t> bdd_ordering_map; // for BDD ordering
-    
+    std::vector<std::string> bdd_ordering;                       // for BDD ordering
+    std::unordered_map<std::string, uint32_t> bdd_ordering_map;  // for BDD ordering
+
     id_type construct_bdd(const expr& x);
     id_type get_id(const Bdd_Node& node);
 
@@ -85,22 +86,9 @@ class Walker {
     id_type rec_apply_not(id_type a);
     id_type negate_bdd(id_type a);
 
-    std::string bdd_repr(id_type id); 
+    std::string bdd_repr(id_type id);
 
    public:
-    Walker() {
-        // Initialize the Walker
-        Bdd_Node false_node{Bdd_Node::Bdd_type::FALSE, "false", 0, 0};
-        Bdd_Node true_node{Bdd_Node::Bdd_type::TRUE, "true", 1, 1};
-        iter_to_false = bdd_set.insert(false_node).first;
-        iter_to_true = bdd_set.insert(true_node).first;
-        from_human_map[0] = iter_to_false;
-        from_human_map[1] = iter_to_true;
-        to_human_map[false_node] = 0;
-        to_human_map[true_node] = 1;
-        counter = 2;
-    }
-
+    Walker();
     void walk(const stmt& statement);
-
 };

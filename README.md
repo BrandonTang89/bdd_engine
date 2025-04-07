@@ -3,8 +3,11 @@
 C++ Implementation of Binary Decision Diagrams for Propositional Formulae Manipulation
 
 ## Todo
-- 
-
+- Unit tests for the construction of BDDs
+- Implement bank + garbage sweeping
+- Implement gviz export (display statements)
+- Implement script import
+ 
 ## Grammar
 
 ```
@@ -12,9 +15,9 @@ statements:
     | statement*
 
 statement: 
-    | 'BVAR' IDENTIFIER ("," IDENTIFIER)* ";"
-    | 'SET' IDENTIFIER "=" expression ";"
-    | DISPLAY expression ";"
+    | 'bvar' IDENTIFIER ("," IDENTIFIER)* ";"
+    | 'set' IDENTIFIER "=" expression ";"
+    | 'display' expression ";"
     | expression ";"
 
 expression:
