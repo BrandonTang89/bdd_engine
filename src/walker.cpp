@@ -10,12 +10,10 @@ Walker::Walker() {
     // Initialize the Walker
     Bdd_Node false_node{Bdd_Node::Bdd_type::FALSE, "false", 0, 0};
     Bdd_Node true_node{Bdd_Node::Bdd_type::TRUE, "true", 1, 1};
-    iter_to_false = bdd_set.insert(false_node).first;
-    iter_to_true = bdd_set.insert(true_node).first;
-    from_human_map[0] = iter_to_false;
-    from_human_map[1] = iter_to_true;
-    to_human_map[false_node] = 0;
-    to_human_map[true_node] = 1;
+    node_to_id[false_node] = 0;
+    node_to_id[true_node] = 1;
+    id_to_iter[0] = node_to_id.find(false_node);
+    id_to_iter[1] = node_to_id.find(true_node);
     counter = 2;
 }
 
@@ -83,4 +81,3 @@ void Walker::walk(const stmt& statement) {
     },
                statement);
 }
-

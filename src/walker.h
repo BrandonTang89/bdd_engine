@@ -1,20 +1,16 @@
 #pragma once
 #include <map>
-#include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
-#include <variant>
 
 #include "ast.h"
 
 // Runtime BDD Structure
 struct Bdd_Node;
 using id_type = uint32_t;
-using bdd_set_type = std::set<Bdd_Node>;
-using iter_type = bdd_set_type::iterator;
-using from_human_map_type = std::map<id_type, iter_type>;  // human_ids -> iter
-using to_human_map_type = std::map<Bdd_Node, id_type>;     // iter -> human_ids
+using node_id_map = std::map<Bdd_Node, id_type>;  // iter -> human_ids
+using iter_type = node_id_map::iterator;
+using id_iter_map = std::unordered_map<id_type, iter_type>;  // human_ids -> iter
 
 struct Bdd_Node {
     enum class Bdd_type {
@@ -26,12 +22,12 @@ struct Bdd_Node {
     Bdd_type type{};
     std::string var{};  // variable name if internal
     id_type high;
-    id_type low;  // only used for internal nodes, set to the end of the set if not used
+    id_type low;  // only used for internal nodes
 
     auto operator<=>(const Bdd_Node&) const = default;
 };
 
-// Varible Types
+// Variable Types
 // Each variable is either a BDD symbol or a variable that represents a binary decision diagram
 struct Bvar_ptype {
     // Binary variable type
@@ -54,9 +50,8 @@ class Walker {
 
    private:
     id_type counter{};  // monotonically increasing human indices
-    bdd_set_type bdd_set;
-    from_human_map_type from_human_map;
-    to_human_map_type to_human_map;
+    id_iter_map id_to_iter;
+    node_id_map node_to_id;
 
     iter_type iter_to_false;
     iter_type iter_to_true;
@@ -65,8 +60,6 @@ class Walker {
     void walk_decl_stmt(const decl_stmt& statement);
     void walk_assign_stmt(const assign_stmt& statement);
     void walk_expr_stmt(const expr_stmt& statement);
-
-    iter_type new_bdd_node(Bdd_Node node);
 
     std::vector<std::string> bdd_ordering;                       // for BDD ordering
     std::unordered_map<std::string, uint32_t> bdd_ordering_map;  // for BDD ordering

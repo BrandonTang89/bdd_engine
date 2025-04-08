@@ -2,7 +2,7 @@
 #include "walker.h"
 
 std::string Walker::bdd_repr(id_type id) {
-    const Bdd_Node& node = *from_human_map[id];
+    const Bdd_Node& node = id_to_iter[id]->first;
     if (node.type == Bdd_Node::Bdd_type::INTERNAL) {
         return (node.var + " ? (" + bdd_repr(node.high) + ") : (" + bdd_repr(node.low)) + ")";
     } else if (node.type == Bdd_Node::Bdd_type::TRUE) {

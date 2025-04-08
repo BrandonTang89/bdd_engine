@@ -65,21 +65,20 @@ id_type Walker::construct_bdd(const expr& x) {
 id_type Walker::get_id(const Bdd_Node& node) {
     if (node.type == Bdd_Node::Bdd_type::FALSE) return 0;
     if (node.type == Bdd_Node::Bdd_type::TRUE) return 1;
-    auto it = to_human_map.find(node);
+    auto it = node_to_id.find(node);
 
-    if (it != to_human_map.end()) {
+    if (it != node_to_id.end()) {
         return it->second;
     } else {
-        auto nit = bdd_set.insert(node).first;
-        to_human_map[node] = (counter++);
-        from_human_map[counter - 1] = nit;
+        node_to_id[node] = (counter++);
+        id_to_iter[counter - 1] = node_to_id.find(node);
         return counter - 1;
     }
 }
 
 id_type Walker::rec_apply_and(id_type a, id_type b) {
-    const Bdd_Node& node_a = *from_human_map[a];
-    const Bdd_Node& node_b = *from_human_map[b];
+    const Bdd_Node& node_a = id_to_iter[a]->first;
+    const Bdd_Node& node_b = id_to_iter[b]->first;
 
     // Base Cases
     if (node_a == node_b) return a;
@@ -126,8 +125,8 @@ id_type Walker::and_bdd(id_type a, id_type b) {
 }
 
 id_type Walker::rec_apply_or(id_type a, id_type b) {
-    const Bdd_Node& node_a = *from_human_map[a];
-    const Bdd_Node& node_b = *from_human_map[b];
+    const Bdd_Node& node_a = id_to_iter[a]->first;
+    const Bdd_Node& node_b = id_to_iter[b]->first;
 
     // Base Cases
     if (node_a == node_b) return a;
@@ -173,7 +172,7 @@ id_type Walker::or_bdd(id_type a, id_type b) {
 }
 
 id_type Walker::rec_apply_not(id_type a) {
-    const Bdd_Node& node = *from_human_map[a];
+    const Bdd_Node& node = id_to_iter[a]->first;
 
     // Base Cases
     if (node.type == Bdd_Node::Bdd_type::FALSE) return 1;
