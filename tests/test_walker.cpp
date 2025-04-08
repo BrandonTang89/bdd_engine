@@ -1,3 +1,6 @@
+#include <iostream>
+
+#include "absl/strings/match.h"
 #include "catch2/catch_test_macros.hpp"
 #include "interp_tester.h"
 
@@ -91,5 +94,41 @@ TEST_CASE("Satisfiability Tests") {
         REQUIRE(interp.is_sat("!(x & y & z)") == true);
         REQUIRE(interp.is_sat("!(x & false)") == true);
         REQUIRE(interp.is_sat("!(x | true)") == false);
+    }
+}
+
+TEST_CASE("Assignment Errors") {
+    InterpTester interp;
+    interp.feed("bvar x, y, z;");
+    SECTION("Assignment to Symbolic Variable") {
+        interp.feed("set x = true;");
+        REQUIRE(absl::StrContains(interp.get_output(), "conflict"));
+
+        interp.feed("set y = x;");
+        REQUIRE(absl::StrContains(interp.get_output(), "conflict"));
+
+        interp.feed("set x = x;");
+        REQUIRE(absl::StrContains(interp.get_output(), "conflict"));
+    }
+
+    SECTION("Assignment to Invalid Expression") {
+        interp.feed("set a = a;");
+        REQUIRE(absl::StrContains(interp.get_output(), "Error"));
+    }
+}
+
+TEST_CASE("Declaration Errors") {
+    InterpTester interp;
+    interp.feed("bvar x, y, z;");
+
+    SECTION("Redeclaration of Variables") {
+        interp.feed("bvar x;");
+        REQUIRE(absl::StrContains(interp.get_output(), "already"));
+    }
+
+    SECTION("Declaration of BDD variable") {
+        interp.feed("set a = true;");
+        interp.feed("bvar a;");
+        REQUIRE(absl::StrContains(interp.get_output(), "conflict"));
     }
 }

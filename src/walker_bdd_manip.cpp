@@ -9,7 +9,7 @@ std::optional<id_type> Walker::construct_bdd_safe(const expr& x) {
     try {
         return construct_bdd(x);
     } catch (const std::exception& e) {
-        LOG(ERROR) << "Error constructing BDD: " << e.what();
+        out << "Error constructing BDD: " << e.what();
         return {};
     }
 }

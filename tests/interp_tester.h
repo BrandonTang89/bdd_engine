@@ -25,6 +25,10 @@ class InterpTester {
         return walker.bdd_repr(interpret_expr(input));
     }
 
+    std::string get_output() {
+        return walker.get_output();
+    }
+
     bool is_sat(std::string input) {
         return walker.is_sat(interpret_expr(input));
     }
