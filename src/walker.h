@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "ast.h"
 
@@ -61,28 +62,32 @@ class Walker {
     std::unordered_map<std::string, Ptype> globals;
     void walk_decl_stmt(const decl_stmt& statement);
     void walk_assign_stmt(const assign_stmt& statement);
-    
+    std::string walk_display_stmt(const display_stmt& statement);
+    id_type walk_expr_stmt(const expr_stmt& statement);
+
     std::vector<std::string> bdd_ordering;                       // for BDD ordering
     std::unordered_map<std::string, uint32_t> bdd_ordering_map;  // for BDD ordering
-    
+
     id_type construct_bdd(const expr& x);
     id_type get_id(const Bdd_Node& node);
-    
+
     std::map<std::tuple<id_type, id_type>, id_type> and_memo;
     id_type rec_apply_and(id_type a, id_type b);
     id_type and_bdd(id_type a, id_type b);
-    
+
     std::map<std::tuple<id_type, id_type>, id_type> or_memo;
     id_type rec_apply_or(id_type a, id_type b);
     id_type or_bdd(id_type a, id_type b);
-    
+
     std::map<id_type, id_type> not_memo;
     id_type rec_apply_not(id_type a);
     id_type negate_bdd(id_type a);
 
-    public:
-    Walker();
+    std::unordered_set<id_type> get_bdd_nodes(id_type id);
     std::string bdd_repr(id_type id);
-    id_type walk_expr_stmt(const expr_stmt& statement);
+    std::string bdd_gviz_repr(id_type id);
+
+   public:
+    Walker();
     void walk(const stmt& statement);
 };

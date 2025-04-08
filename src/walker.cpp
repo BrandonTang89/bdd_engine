@@ -48,6 +48,13 @@ void Walker::walk_assign_stmt(const assign_stmt& statement) {
     }
 }
 
+std::string Walker::walk_display_stmt(const display_stmt& statement) {
+    id_type bdd_id = construct_bdd(*statement.expression);
+    std::string gviz_rep = bdd_gviz_repr(bdd_id);
+    std::cout << gviz_rep << std::endl;
+    return gviz_rep;
+}
+
 id_type Walker::walk_expr_stmt(const expr_stmt& statement) {
     // Handle expression statement
     try {
@@ -72,6 +79,7 @@ void Walker::walk(const stmt& statement) {
         } else if constexpr (std::is_same_v<T, display_stmt>) {
             // Handle display statement
             LOG(INFO) << "Executing Display Statement...";
+            walk_display_stmt(stmt);
         } else if constexpr (std::is_same_v<T, decl_stmt>) {
             // Handle declaration statement
             LOG(INFO) << "Executing Declaration Statement...";

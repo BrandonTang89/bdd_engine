@@ -42,7 +42,8 @@
         "text_encoding": "cpp",
         "tuple": "cpp",
         "any": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "vector": "cpp"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/g++-14",
     "files.watcherExclude": {

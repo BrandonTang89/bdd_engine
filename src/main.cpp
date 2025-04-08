@@ -12,11 +12,6 @@
 // Evaulates a list of statements
 void evaluate(const std::string& user_input, Walker& walker) {
     std::vector<Token> stream = scan_to_tokens(user_input);
-    // LOG(INFO) << "Tokens: ";
-    // for (const auto& token : stream) {
-    //     LOG(INFO) << token.repr();
-    // }
-
     std::vector<stmt> statements = parse(stream);
     for (const auto& statement: statements) {
         LOG(INFO) << stmt_repr(statement);
@@ -27,7 +22,7 @@ void evaluate(const std::string& user_input, Walker& walker) {
 
 int main() {
     absl::InitializeLog();
-    absl::SetStderrThreshold(absl::LogSeverity::kInfo);
+    absl::SetStderrThreshold(absl::LogSeverity::kError); // set logging
     LOG(INFO) << "Application Started";
     std::cout << "Binary Decision Diagram Engine" << std::endl;
 
