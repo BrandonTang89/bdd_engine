@@ -10,6 +10,7 @@ using const_iter = std::vector<Token>::const_iterator;
 
 // Parses a vector of expressions into an Abstract Syntax Tree (AST)
 std::vector<stmt> parse(const std::vector<Token>& expressions);
+std::vector<stmt> parse(const std::string& input);
 
 // Parses a single statement
 stmt parse_statement(const_iter& it);

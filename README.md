@@ -7,6 +7,7 @@ C++ Implementation of Binary Decision Diagrams for Propositional Formulae Manipu
 - Implement bank + garbage sweeping
 - Implement gviz export (display statements)
 - Implement script import
+- Implement hash for BDD nodes and replace map with hashmap
  
 ## Grammar
 

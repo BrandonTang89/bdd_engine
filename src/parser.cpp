@@ -21,6 +21,13 @@ std::vector<stmt> parse(const std::vector<Token>& tokens) {
     return statements;
 }
 
+// Combines the lexer and the parser
+std::vector<stmt> parse(const std::string& input) {
+    // Tokenize the input string
+    auto tokens = scan_to_tokens(input);
+    return parse(tokens);
+}   
+
 // // Parses a single statement
 stmt parse_statement(const_iter& it) {
     switch (it->type) {

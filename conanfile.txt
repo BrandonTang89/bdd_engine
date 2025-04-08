@@ -1,5 +1,6 @@
 [requires]
 abseil/20250127.0
+catch2/3.8.0
 
 [generators]
 CMakeDeps

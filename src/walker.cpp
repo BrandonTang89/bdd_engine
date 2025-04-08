@@ -48,14 +48,16 @@ void Walker::walk_assign_stmt(const assign_stmt& statement) {
     }
 }
 
-void Walker::walk_expr_stmt(const expr_stmt& statement) {
+id_type Walker::walk_expr_stmt(const expr_stmt& statement) {
     // Handle expression statement
     try {
         id_type bdd_id = construct_bdd(*statement.expression);
         std::cout << "BDD ID: " << bdd_id << std::endl;
         std::cout << "BDD Representation: " << bdd_repr(bdd_id) << std::endl;
+        return bdd_id;
     } catch (const std::exception& e) {
         LOG(ERROR) << "Error constructing BDD: " << e.what();
+        return -1;
     }
 }
 

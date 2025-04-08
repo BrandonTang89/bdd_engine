@@ -11,6 +11,7 @@ list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
 # Packages
 find_package(absl)
+find_package(Catch2 REQUIRED)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
@@ -27,3 +28,18 @@ target_link_libraries(${PROJECT_NAME} abseil::abseil)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
 target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined)
 target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined)
+
+
+# Add tests
+enable_testing()
+add_executable(tests
+    tests/test_walker.cpp  # Add your test files here
+    src/token.cpp
+    src/parser.cpp
+    src/ast.cpp
+    src/walker.cpp
+    src/walker_bdd_view.cpp
+    src/walker_bdd_manip.cpp
+)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain abseil::abseil)
+add_test(NAME bdd_engine_tests COMMAND tests)
