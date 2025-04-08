@@ -54,27 +54,29 @@ using id_iter_map = std::unordered_map<id_type, iter_type>;  // human_ids -> ite
 class Walker {
     // An instance of the tree-walk interpreter
     // Manages the environment of the interpreter and available BDDs in the memory
+    // Side-effect free, output is written to the this->out stream
 
     friend class InterpTester;
 
    private:
-    id_type counter{};  // monotonically increasing human indices
+    std::ostringstream out;  // printable output
+    id_type counter{};       // monotonically increasing human indices
     id_iter_map id_to_iter;
     node_id_map node_to_id;
 
     iter_type iter_to_false;
     iter_type iter_to_true;
 
-
     std::unordered_map<std::string, Ptype> globals;
     void walk_decl_stmt(const decl_stmt& statement);
     void walk_assign_stmt(const assign_stmt& statement);
     void walk_func_call_stmt(const func_call_stmt& statement);
-    id_type walk_expr_stmt(const expr_stmt& statement);
+    void walk_expr_stmt(const expr_stmt& statement);
 
     std::vector<std::string> bdd_ordering;                       // for BDD ordering
     std::unordered_map<std::string, uint32_t> bdd_ordering_map;  // for BDD ordering
 
+    std::optional<id_type> construct_bdd_safe(const expr& x);
     id_type construct_bdd(const expr& x);
     id_type get_id(const Bdd_Node& node);
 
@@ -99,5 +101,6 @@ class Walker {
 
    public:
     Walker();
-    void walk(const stmt& statement);
+    void walk(const stmt& statement);  // walk the AST and evaluate the statement
+    std::string get_output();          // clears the output buffer and returns the output
 };

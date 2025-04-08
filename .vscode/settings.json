@@ -43,7 +43,8 @@
         "tuple": "cpp",
         "any": "cpp",
         "unordered_map": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "random": "cpp"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/g++-14",
     "files.watcherExclude": {

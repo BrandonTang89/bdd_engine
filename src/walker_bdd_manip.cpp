@@ -1,7 +1,18 @@
 #include <iostream>
+#include <optional>
 #include <variant>
 
+#include "absl/log/log.h"
 #include "walker.h"
+
+std::optional<id_type> Walker::construct_bdd_safe(const expr& x) {
+    try {
+        return construct_bdd(x);
+    } catch (const std::exception& e) {
+        LOG(ERROR) << "Error constructing BDD: " << e.what();
+        return {};
+    }
+}
 
 id_type Walker::construct_bdd(const expr& x) {
     id_type ret_id{};

@@ -9,12 +9,17 @@
 #include "token.h"
 #include "walker.h"
 
+constexpr bool echo_input = false;    // Set to true to echo input
 constexpr bool print_tokens = false;  // Set to true to print tokens
 constexpr bool print_ast = false;     // Set to true to print AST
 
-// Evaulates a list of statements
+// Evaluates a list of statements
 void evaluate(const std::string& user_input, Walker& walker) {
     std::vector<Token> stream = scan_to_tokens(user_input);
+
+    if constexpr (echo_input) {
+        LOG(WARNING) << "Input: " << user_input << std::endl;
+    }
 
     if constexpr (print_tokens) {
         for (const auto& token : stream) {
@@ -26,6 +31,7 @@ void evaluate(const std::string& user_input, Walker& walker) {
     for (const auto& statement : statements) {
         if constexpr (print_ast) LOG(WARNING) << stmt_repr(statement);
         walker.walk(statement);
+        std::cout << walker.get_output();
     }
 }
 
@@ -45,7 +51,6 @@ int main() {
             input += line;
         }
 
-        std::cout << "Input: " << input << std::endl;
         evaluate(input, walker);
     }
 }
