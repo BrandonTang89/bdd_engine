@@ -1,18 +1,12 @@
 #pragma once
-#include <map>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 
+#include "absl/hash/hash.h"
 #include "ast.h"
 
 // Runtime BDD Structure
-struct Bdd_Node;
 using id_type = uint32_t;
-using node_id_map = std::map<Bdd_Node, id_type>;  // iter -> human_ids
-using iter_type = node_id_map::iterator;
-using id_iter_map = std::unordered_map<id_type, iter_type>;  // human_ids -> iter
-
 struct Bdd_Node {
     enum class Bdd_type {
         TRUE,
@@ -25,7 +19,14 @@ struct Bdd_Node {
     id_type high;
     id_type low;  // only used for internal nodes
 
+    // Default equality comparison
     auto operator<=>(const Bdd_Node&) const = default;
+
+    // Custom absl hash function
+    template <typename H>
+    friend H AbslHashValue(H h, const Bdd_Node& node) {
+        return H::combine(std::move(h), node.var, node.high, node.low);
+    }
 };
 
 // Variable Types
@@ -45,6 +46,11 @@ using Ptype = std::variant<Bvar_ptype, Bdd_ptype>;
 enum class Ptype_type : size_t { BVAR = 0,
                                  BDD = 1 };
 
+// Walker Types to hold BDDs
+using node_id_map = std::unordered_map<Bdd_Node, id_type, absl::Hash<Bdd_Node>>;
+using iter_type = node_id_map::iterator;
+using id_iter_map = std::unordered_map<id_type, iter_type>;  // human_ids -> iter
+
 class Walker {
     // An instance of the tree-walk interpreter
     // Manages the environment of the interpreter and available BDDs in the memory
@@ -59,10 +65,11 @@ class Walker {
     iter_type iter_to_false;
     iter_type iter_to_true;
 
+
     std::unordered_map<std::string, Ptype> globals;
     void walk_decl_stmt(const decl_stmt& statement);
     void walk_assign_stmt(const assign_stmt& statement);
-    std::string walk_display_stmt(const display_stmt& statement);
+    void walk_func_call_stmt(const func_call_stmt& statement);
     id_type walk_expr_stmt(const expr_stmt& statement);
 
     std::vector<std::string> bdd_ordering;                       // for BDD ordering
@@ -82,6 +89,9 @@ class Walker {
     std::map<id_type, id_type> not_memo;
     id_type rec_apply_not(id_type a);
     id_type negate_bdd(id_type a);
+
+    std::unordered_map<id_type, bool> is_sat_memo;  // check if BDD is satisfiable
+    bool is_sat(id_type a);
 
     std::unordered_set<id_type> get_bdd_nodes(id_type id);
     std::string bdd_repr(id_type id);

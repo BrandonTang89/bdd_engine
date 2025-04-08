@@ -14,6 +14,8 @@ Walker::Walker() {
     node_to_id[true_node] = 1;
     id_to_iter[0] = node_to_id.find(false_node);
     id_to_iter[1] = node_to_id.find(true_node);
+    is_sat_memo[0] = false;
+    is_sat_memo[1] = true;
     counter = 2;
 }
 
@@ -48,11 +50,51 @@ void Walker::walk_assign_stmt(const assign_stmt& statement) {
     }
 }
 
-std::string Walker::walk_display_stmt(const display_stmt& statement) {
-    id_type bdd_id = construct_bdd(*statement.expression);
-    std::string gviz_rep = bdd_gviz_repr(bdd_id);
-    std::cout << gviz_rep << std::endl;
-    return gviz_rep;
+void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
+    switch (statement.func_name.type) {
+        case Token::Type::TREE_DISPLAY: {
+            LOG(INFO) << "Tree Display Function Called";
+            if (statement.arguments.size() != 1) {
+                LOG(ERROR) << "Invalid number of arguments for tree display";
+                return;
+            }
+            try {
+                id_type bdd_id = construct_bdd(*statement.arguments[0]);
+                std::cout << "BDD ID: " << bdd_id << std::endl;
+                std::cout << "BDD Representation: " << bdd_repr(bdd_id) << std::endl;
+            } catch (const std::exception& e) {
+                LOG(ERROR) << "Error constructing BDD: " << e.what();
+            }
+            break;
+        }
+        case Token::Type::GRAPH_DISPLAY: {
+            if (statement.arguments.size() != 1) {
+                LOG(ERROR) << "Invalid number of arguments for graph display";
+                return;
+            }
+            id_type bdd_id = construct_bdd(*statement.arguments[0]);
+            std::string gviz_rep = bdd_gviz_repr(bdd_id);
+            std::cout << gviz_rep << std::endl;
+            break;
+        }
+        case Token::Type::IS_SAT: {
+            if (statement.arguments.size() != 1) {
+                LOG(ERROR) << "Invalid number of arguments for is_sat";
+                return;
+            }
+            LOG(INFO) << "Is SAT Function Called" << std::endl;
+            bool sat = is_sat(construct_bdd(*statement.arguments[0]));
+
+            if (sat) {
+                std::cout << "satisfiable" << std::endl;
+            } else {
+                std::cout << "unsatisfiable" << std::endl;
+            }
+            break;
+        }
+        default:
+            LOG(ERROR) << "Unknown function call";
+    }
 }
 
 id_type Walker::walk_expr_stmt(const expr_stmt& statement) {
@@ -60,7 +102,6 @@ id_type Walker::walk_expr_stmt(const expr_stmt& statement) {
     try {
         id_type bdd_id = construct_bdd(*statement.expression);
         std::cout << "BDD ID: " << bdd_id << std::endl;
-        std::cout << "BDD Representation: " << bdd_repr(bdd_id) << std::endl;
         return bdd_id;
     } catch (const std::exception& e) {
         LOG(ERROR) << "Error constructing BDD: " << e.what();
@@ -76,10 +117,10 @@ void Walker::walk(const stmt& statement) {
             // Handle expression statement
             LOG(INFO) << "Executing Expression Statement...";
             walk_expr_stmt(stmt);
-        } else if constexpr (std::is_same_v<T, display_stmt>) {
+        } else if constexpr (std::is_same_v<T, func_call_stmt>) {
             // Handle display statement
             LOG(INFO) << "Executing Display Statement...";
-            walk_display_stmt(stmt);
+            walk_func_call_stmt(stmt);
         } else if constexpr (std::is_same_v<T, decl_stmt>) {
             // Handle declaration statement
             LOG(INFO) << "Executing Declaration Statement...";

@@ -22,7 +22,7 @@ decl_stmt parse_decl(const_iter& it);
 assign_stmt parse_assign(const_iter& it);
 
 // Parses a Display Statement
-display_stmt parse_display(const_iter& it);
+func_call_stmt parse_func_call(const_iter& it);
 
 // Parse an Expression Statement
 expr_stmt parse_expr_stmt(const_iter& it);

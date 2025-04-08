@@ -7,8 +7,14 @@ const std::unordered_map<std::string, Token::Type> keyword_map = {
     {"set", Token::Type::SET},
     {"true", Token::Type::TRUE},
     {"false", Token::Type::FALSE},
-    {"display", Token::Type::DISPLAY},
+    {"display_tree", Token::Type::TREE_DISPLAY},
+    {"display_graph", Token::Type::GRAPH_DISPLAY},
+    {"is_sat", Token::Type::IS_SAT},
 };
+
+constexpr bool is_lexeme_char(char c) {
+    return isalpha(c) || isdigit(c) || c == '_';
+}
 
 std::vector<Token> scan_to_tokens(const std::string& source) {
     std::vector<Token> tokens;
@@ -55,7 +61,7 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
             default:
                 if (isalpha(c)) {
                     std::string identifier;
-                    while (isalnum(c)) {
+                    while (is_lexeme_char(c)) {
                         identifier += c;
                         c = source[++i];
                     }
@@ -71,6 +77,5 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
         }
         ++i;  // Move to the next character
     }
-
     return tokens;
 }

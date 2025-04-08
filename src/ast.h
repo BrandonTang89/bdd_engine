@@ -32,21 +32,22 @@ struct identifier {
 
 // Statements
 struct expr_stmt;
-struct display_stmt;
+struct func_call_stmt;
 struct decl_stmt;
 struct assign_stmt;
 using stmt = std::variant<
     std::monostate,
     expr_stmt,
-    display_stmt,
+    func_call_stmt,
     decl_stmt,
     assign_stmt>;
 struct expr_stmt {
     std::unique_ptr<expr> expression;
 };
 
-struct display_stmt {
-    std::unique_ptr<expr> expression;
+struct func_call_stmt {
+    Token func_name;
+    std::vector<std::unique_ptr<expr>> arguments;
 };
 
 struct decl_stmt {
@@ -57,6 +58,5 @@ struct assign_stmt {
     std::unique_ptr<identifier> target;
     std::unique_ptr<expr> value;
 };
-
 
 std::string stmt_repr(const stmt& statement);

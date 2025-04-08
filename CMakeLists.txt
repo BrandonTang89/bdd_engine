@@ -33,7 +33,8 @@ target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined)
 # Add tests
 enable_testing()
 add_executable(tests
-    tests/test_walker.cpp  # Add your test files here
+    tests/test_main.cpp  # Add your test files here
+    tests/test_walker.cpp
     src/token.cpp
     src/parser.cpp
     src/ast.cpp
@@ -42,4 +43,7 @@ add_executable(tests
     src/walker_bdd_manip.cpp
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain abseil::abseil)
+target_compile_options(tests PRIVATE -fsanitize=address,undefined)
+target_link_options(tests PRIVATE -fsanitize=address,undefined)
+
 add_test(NAME bdd_engine_tests COMMAND tests)

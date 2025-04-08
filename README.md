@@ -9,12 +9,9 @@ C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wiki
 - Implement script import
 
 *Language Features*
-- Implement equality/satisfiability checks
 - Implement syntactic sugar for implies, iff, xor, etc.
 - Implement evaluation for BDDs under assignments
 
-*Optimisations*
-- Implement hash for BDD nodes and replace map with hashmap
 
 ## Language
 ### Grammar
@@ -23,10 +20,15 @@ statements:
     | statement*
 
 statement: 
-    | 'bvar' IDENTIFIER ("," IDENTIFIER)* ";"
-    | 'set' IDENTIFIER "=" expression ";"
-    | 'display' expression ";"
+    | "bvar" IDENTIFIER ("," IDENTIFIER)* ";"
+    | "set" IDENTIFIER "=" expression ";"
+    | function_name expression+ ";"
     | expression ";"
+
+function_name
+    | "display_tree" 
+    | "display_graph"
+    | "is_sat"
 
 expression:
     | conjuct ("|" conjuct)*
@@ -50,6 +52,7 @@ The application ignores white space. Each statement is terminated by a semicolon
 
 All variables are either BDD variables or symbolic variables used in BDD construction.
 
+#### Symbolic Variable Declaration
 We declare symbolic variables using the `bvar` keyword. 
 
 ```
@@ -59,8 +62,10 @@ This will create two symbolic variables `x` and `y`.
 
 The order in which sybolic variables are declared is important as this is their order within the BDDs.
 
+#### Expressions
 All expressions are evaluated to form BDDs. An epression is either a conjunction, disjunction or negation of other expressions, or a primary expression. A primary expression is either a symbolic variable (declared with `bvar`), a boolean constant (`true` or `false`), a parenthesized expression or a BDD variable.
 
+#### Assignments
 We can assign BDDs to any non-symbolic variables using the `set` keyword.
 
 ```
@@ -69,19 +74,35 @@ set b = !x | y;
 set c = a & b;
 ```
 
-Writing just an expression will display the BDD as an "if-else" tree. 
+#### Expression Statements
+Writing just an expression will display the id of the BDD node that an expression corresponds to.
 
 ```
 a;
 ```
 
-We can use the `display` keyword to print a DOT language representation of the BDD that can be viewed with [Graphviz](https://graphviz.org/). An online viewer is available at [Graphviz Online](https://dreampuf.github.io/GraphvizOnline).
+#### Built-in Functions
+We have a few built-in functions to query about the BDDs:
+
+Display the BDD in a tree format:
+```
+display_tree <expression>
+```
+
+Display a graph representation of the BDD:
+```
+display_graph <expression>
+```
+
+Prints a DOT language representation of the BDD that can be viewed with [Graphviz](https://graphviz.org/). An online viewer is available at [Graphviz Online](https://dreampuf. github.io/GraphvizOnline). 
 
 In the graph, the nodes are labelled with the BDD variables they pivot on. The solid edges represent high branches and the dashed edges represent low branches. The leaves are labelled with `TRUE` or `FALSE`.
 
+Check satisfiability of the BDD:
 ```
-display c;
+is_sat <expression>
 ```
+
 
 ### Example Interaction
 ```
@@ -91,18 +112,21 @@ Input: bvar x, y, z;
 Declared Symbolic Variable: x
 Declared Symbolic Variable: y
 Declared Symbolic Variable: z
-> x & y; 
+> x & y;
 Input: x & y;
 BDD ID: 4
-BDD Representation: x ? (y ? (TRUE) : (FALSE)) : (FALSE)
-> set a = x & y | z; 
+> set a = x & y | z;
 Input: set a = x & y | z;
 Assigned to a with BDD ID: 7
-> set b = x & true & !a; 
+> display_tree a;
+Input: display_tree a;
+BDD ID: 7
+BDD Representation: x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))
+> set b = x & true & !a;
 Input: set b = x & true & !a;
 Assigned to b with BDD ID: 11
-> display b;
-Input: display b;
+> display_graph b;
+Input: display_graph b;
 digraph G {
   1 [label="TRUE"];
   8 [label="z"];
@@ -119,7 +143,7 @@ digraph G {
 ```
 
 ## Architecture
-All BDDs are stored together as a big implicit directed acyclic graph. Each BDD node is identified by an integer id. This helps to save memory space and makes comparision of BDDs easier (if they have the same id, they are the same BDD).
+All BDDs are stored together as a big implicit directed acyclic graph. Each BDD node is uniquely identified by an integer id. This helps to save memory space and makes comparision of BDDs easier. Specifically, two formulae are logically equivalent iff they have the same BDD id.
 
 The true and false leaves are represented by the ids 1 and 0 respectively.
 

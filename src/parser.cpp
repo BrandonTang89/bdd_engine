@@ -26,7 +26,7 @@ std::vector<stmt> parse(const std::string& input) {
     // Tokenize the input string
     auto tokens = scan_to_tokens(input);
     return parse(tokens);
-}   
+}
 
 // // Parses a single statement
 stmt parse_statement(const_iter& it) {
@@ -35,8 +35,10 @@ stmt parse_statement(const_iter& it) {
             return parse_decl(it);
         case Token::Type::SET:
             return parse_assign(it);
-        case Token::Type::DISPLAY:
-            return parse_display(it);
+        case Token::Type::TREE_DISPLAY:
+        case Token::Type::GRAPH_DISPLAY:
+        case Token::Type::IS_SAT:
+            return parse_func_call(it);
         default:  // assume expr statement
             return parse_expr_stmt(it);
             throw std::runtime_error("Unknown statement type");
@@ -80,14 +82,20 @@ assign_stmt parse_assign(const_iter& it) {
     return assign;
 }
 
-// Parse a Display Statement
-display_stmt parse_display(const_iter& it) {
-    display_stmt display;
-    ++it;  // Skip the 'display' token
-    display.expression = parse_expr(it);
-    assert(it->type == Token::Type::SEMICOLON);
+// Parse a Function Call Statement
+func_call_stmt parse_func_call(const_iter& it) {
+    func_call_stmt call{*it, {}};
+    ++it;  // Skip the function name token
+    assert(it->type == Token::Type::LEFT_PAREN);
+
+    while (true) {
+        call.arguments.push_back(parse_expr(it));
+        assert(it->type == Token::Type::COMMA || it->type == Token::Type::RIGHT_PAREN);
+
+        if (it->type == Token::Type::SEMICOLON) break;
+    }
     ++it;  // Skip the ';' token
-    return display;
+    return call;
 }
 
 // Parse an Expression Statement

@@ -2,6 +2,26 @@
 
 #include "walker.h"
 
+bool Walker::is_sat(id_type a) {
+    // Check if the BDD is satisfiable
+    auto it = is_sat_memo.find(a);
+    if (it != is_sat_memo.end()) {
+        return it->second;
+    }
+    const Bdd_Node& node = id_to_iter[a]->first;
+
+    // Base case set up in walker constructor
+    // if (node.type == Bdd_Node::Bdd_type::TRUE) {
+    //     return is_sat_memo[a] = true;
+    // } else if (node.type == Bdd_Node::Bdd_type::FALSE) {
+    //     return is_sat_memo[a] = false;
+    // }
+
+    bool result = is_sat(node.high) || is_sat(node.low);
+    is_sat_memo[a] = result;
+    return result;
+}
+
 std::string Walker::bdd_repr(id_type id) {
     // Prints the BDD as a tree
     // Caution: the tree representation can be exponentially large

@@ -19,15 +19,19 @@ struct Token {
         BANG,
         BANG_EQUAL,
 
-        // Keywords
+        // Multiple character tokens
         IDENTIFIER,
+
+        // Keywords
         BVAR,
         SET,
         TRUE,
         FALSE,
 
-        // Special Keywords (since we don't do functions)
-        DISPLAY,
+        // Special Keywords for functions
+        TREE_DISPLAY,
+        GRAPH_DISPLAY,
+        IS_SAT,
     };
 
     Type type;
@@ -40,4 +44,4 @@ struct Token {
     }
 };
 
-std::vector<Token> scan_to_tokens(const std::string& source); 
+std::vector<Token> scan_to_tokens(const std::string& source);

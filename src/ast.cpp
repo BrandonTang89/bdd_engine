@@ -22,11 +22,18 @@ std::string stmt_repr(const stmt& statement) {
     return std::visit([](const auto& s) -> std::string {
         using T = std::decay_t<decltype(s)>;
         if constexpr (std::is_same_v<T, expr_stmt>) {
-            return "Expression Statement(" + expr_repr(*(s.expression)) + ")";
-        } else if constexpr (std::is_same_v<T, display_stmt>) {
-            return "Display Statement(" + expr_repr(*(s.expression)) + ")";
+            return "Expr_Stmt(" + expr_repr(*(s.expression)) + ")";
+        } else if constexpr (std::is_same_v<T, func_call_stmt>) {
+            std::string result = "Func_Call_Stmt(" + s.func_name.lexeme + "(";
+            for (const auto& arg : s.arguments) {
+                result += expr_repr(*(arg)) + ", ";
+            }
+            result.pop_back();  // Remove last space
+            result.pop_back();  // Remove last comma
+            result += "))";
+            return result;
         } else if constexpr (std::is_same_v<T, decl_stmt>) {
-            std::string result = "Declaration Statement(";
+            std::string result = "Decl_Stmt(";
             for (const auto& id : s.identifiers) {
                 result += id.lexeme + ", ";
             }
@@ -35,7 +42,7 @@ std::string stmt_repr(const stmt& statement) {
             result += ")";
             return result;
         } else if constexpr (std::is_same_v<T, assign_stmt>) {
-            std::string result = "Assignment Statement(";
+            std::string result = "Assign_Stmt(";
             result += "Target: " + expr_repr(*(s.target)) + ", ";
             result += "Value: " + expr_repr(*(s.value)) + ")";
             return result;
