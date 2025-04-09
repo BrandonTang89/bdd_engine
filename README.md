@@ -34,10 +34,10 @@ expression:
     | conjuct ("|" conjuct)*
 
 conjuct:
-    | disjunct ("&" disjunct)*
+    | unary ("&" unary)*
 
 disjunct:
-    | "!" disjunct
+    | "!" unary
     | primary
 
 primary:
@@ -51,6 +51,12 @@ primary:
 The application ignores white space. Each statement is terminated by a semicolon.
 
 All variables are either BDD variables or symbolic variables used in BDD construction.
+
+To be able to use up and down arrow keys to use previous commands, use `rlwrap` to run the binary.
+
+```bash
+rlwrap ./bdd_engine
+```
 
 #### Symbolic Variable Declaration
 We declare symbolic variables using the `bvar` keyword. 
