@@ -17,7 +17,7 @@ C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wiki
 ### Grammar
 ```
 statements:
-    | statement*
+    | statement+
 
 statement: 
     | "bvar" IDENTIFIER ("," IDENTIFIER)* ";"
@@ -170,5 +170,5 @@ cd build
 make -j 8
 ```
 
-Depends on `Abseil` for logging and `Catch2` for testing.
+Depends on `Abseil` and `Catch2`.
 
