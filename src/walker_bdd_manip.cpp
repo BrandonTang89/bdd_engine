@@ -56,7 +56,8 @@ id_type Walker::construct_bdd(const expr& x) {
                     if (std::holds_alternative<Bvar_ptype>(globals[expr.name.lexeme])) {
                         // Handle BDD variable
                         const auto& bvar = std::get<Bvar_ptype>(globals[expr.name.lexeme]);
-                        Bdd_Node bdd_node{Bdd_Node::Bdd_type::INTERNAL, bvar.name, 1, 0};  // if x then high else low
+                        Bdd_Node bdd_node{Bdd_Node::Bdd_type::INTERNAL, bvar.name, 1,
+                                          0};  // if x then high else low
                         return ret_id = get_id(bdd_node);
                     } else {
                         return ret_id = std::get<Bdd_ptype>(globals[expr.name.lexeme]).id;

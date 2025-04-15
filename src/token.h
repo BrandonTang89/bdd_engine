@@ -1,10 +1,11 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
 struct Token {
-    enum class Type {
+    enum class Type : std::uint8_t {
         // Single-character Tokens
         LEFT_PAREN,
         RIGHT_PAREN,

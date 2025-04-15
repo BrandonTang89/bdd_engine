@@ -8,7 +8,7 @@
 // Runtime BDD Structure
 using id_type = uint32_t;
 struct Bdd_Node {
-    enum class Bdd_type {
+    enum class Bdd_type : std::uint8_t {
         TRUE,
         FALSE,
         INTERNAL,
@@ -43,8 +43,7 @@ struct Bdd_ptype {
 };
 
 using Ptype = std::variant<Bvar_ptype, Bdd_ptype>;
-enum class Ptype_type : size_t { BVAR = 0,
-                                 BDD = 1 };
+enum class Ptype_type : std::uint8_t { BVAR = 0, BDD = 1 };
 
 // Walker Types to hold BDDs
 using node_id_map = std::unordered_map<Bdd_Node, id_type, absl::Hash<Bdd_Node>>;

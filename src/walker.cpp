@@ -24,28 +24,29 @@ std::string Walker::get_output() {
 
 void Walker::walk(const stmt& statement) {
     // Walk the AST and evaluate the statement
-    std::visit([this](const auto& stmt) {
-        using T = std::decay_t<decltype(stmt)>;
-        if constexpr (std::is_same_v<T, expr_stmt>) {
-            // Handle expression statement
-            LOG(INFO) << "Executing Expression Statement...";
-            walk_expr_stmt(stmt);
-        } else if constexpr (std::is_same_v<T, func_call_stmt>) {
-            // Handle display statement
-            LOG(INFO) << "Executing Display Statement...";
-            walk_func_call_stmt(stmt);
-        } else if constexpr (std::is_same_v<T, decl_stmt>) {
-            // Handle declaration statement
-            LOG(INFO) << "Executing Declaration Statement...";
-            walk_decl_stmt(stmt);
-        } else if constexpr (std::is_same_v<T, assign_stmt>) {
-            LOG(INFO) << "Executing Assignment Statement...";
-            walk_assign_stmt(stmt);
-        } else {
-            assert(false && "Unknown statement type");
-        }
-    },
-               statement);
+    std::visit(
+        [this](const auto& stmt) {
+            using T = std::decay_t<decltype(stmt)>;
+            if constexpr (std::is_same_v<T, expr_stmt>) {
+                // Handle expression statement
+                LOG(INFO) << "Executing Expression Statement...";
+                walk_expr_stmt(stmt);
+            } else if constexpr (std::is_same_v<T, func_call_stmt>) {
+                // Handle display statement
+                LOG(INFO) << "Executing Display Statement...";
+                walk_func_call_stmt(stmt);
+            } else if constexpr (std::is_same_v<T, decl_stmt>) {
+                // Handle declaration statement
+                LOG(INFO) << "Executing Declaration Statement...";
+                walk_decl_stmt(stmt);
+            } else if constexpr (std::is_same_v<T, assign_stmt>) {
+                LOG(INFO) << "Executing Assignment Statement...";
+                walk_assign_stmt(stmt);
+            } else {
+                assert(false && "Unknown statement type");
+            }
+        },
+        statement);
 }
 
 void Walker::walk_decl_stmt(const decl_stmt& statement) {
@@ -61,7 +62,9 @@ void Walker::walk_decl_stmt(const decl_stmt& statement) {
             if (std::holds_alternative<Bvar_ptype>(globals[identifier.lexeme])) {
                 out << "Variable already declared: " << identifier.lexeme << std::endl;
             } else {
-                out << "Variable name conflict (making a variable holding a bdd symbolic), ignoring: " << identifier.lexeme << std::endl;
+                out << "Variable name conflict (making a variable holding a bdd symbolic), "
+                       "ignoring: "
+                    << identifier.lexeme << std::endl;
             }
         }
     }
@@ -72,8 +75,10 @@ void Walker::walk_assign_stmt(const assign_stmt& statement) {
 
     // LOG(ERROR) << std::holds_alternative<Bdd_ptype>(globals[statement.target->name.lexeme]);
 
-    if (globals.find(statement.target->name.lexeme) != globals.end() && !std::holds_alternative<Bdd_ptype>(globals[statement.target->name.lexeme])) {
-        out << "Variable name conflict (assigning to symbolic variable), ignoring assignment of: " << statement.target->name.lexeme << std::endl;
+    if (globals.find(statement.target->name.lexeme) != globals.end() &&
+        !std::holds_alternative<Bdd_ptype>(globals[statement.target->name.lexeme])) {
+        out << "Variable name conflict (assigning to symbolic variable), ignoring assignment of: "
+            << statement.target->name.lexeme << std::endl;
         return;
     }
 
@@ -81,7 +86,8 @@ void Walker::walk_assign_stmt(const assign_stmt& statement) {
     if (!bdd_id_opt.has_value()) return;
     id_type bdd_id = bdd_id_opt.value();
     globals[statement.target->name.lexeme] = Bdd_ptype{statement.target->name.lexeme, bdd_id};
-    out << "Assigned to " << statement.target->name.lexeme << " with BDD ID: " << bdd_id << std::endl;
+    out << "Assigned to " << statement.target->name.lexeme << " with BDD ID: " << bdd_id
+        << std::endl;
 }
 
 void Walker::walk_func_call_stmt(const func_call_stmt& statement) {

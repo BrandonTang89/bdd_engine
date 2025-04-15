@@ -14,11 +14,11 @@ constexpr bool print_tokens = false;  // Set to true to print tokens
 constexpr bool print_ast = false;     // Set to true to print AST
 
 // Evaluates a list of statements
-void evaluate(const std::string& user_input, Walker& walker) {
+static void evaluate(const std::string& user_input, Walker& walker) {
     std::vector<Token> stream = scan_to_tokens(user_input);
 
     if constexpr (echo_input) {
-        LOG(WARNING) << "Input: " << user_input << std::endl;
+        LOG(WARNING) << "Input: " << user_input << '\n';
     }
 
     if constexpr (print_tokens) {
@@ -38,7 +38,7 @@ void evaluate(const std::string& user_input, Walker& walker) {
 int main() {
     absl::InitializeLog();
     absl::SetStderrThreshold(absl::LogSeverity::kWarning);  // set logging
-    std::cout << "Binary Decision Diagram Engine" << std::endl;
+    std::cout << "Binary Decision Diagram Engine" << '\n';
 
     // REPL
     Walker walker;

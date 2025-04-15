@@ -35,12 +35,7 @@ struct expr_stmt;
 struct func_call_stmt;
 struct decl_stmt;
 struct assign_stmt;
-using stmt = std::variant<
-    std::monostate,
-    expr_stmt,
-    func_call_stmt,
-    decl_stmt,
-    assign_stmt>;
+using stmt = std::variant<std::monostate, expr_stmt, func_call_stmt, decl_stmt, assign_stmt>;
 struct expr_stmt {
     std::unique_ptr<expr> expression;
 };

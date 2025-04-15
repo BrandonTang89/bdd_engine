@@ -75,8 +75,10 @@ std::string Walker::bdd_gviz_repr(id_type id) {
         const Bdd_Node& node = id_to_iter[bdd_id]->first;
         if (node.type == Bdd_Node::Bdd_type::INTERNAL) {
             gviz += "  " + std::to_string(bdd_id) + " [label=\"" + node.var + "\"];\n";
-            gviz += "  " + std::to_string(bdd_id) + " -> " + std::to_string(node.high) + " [style=\"solid\"];\n";
-            gviz += "  " + std::to_string(bdd_id) + " -> " + std::to_string(node.low) + " [style=\"dashed\"];\n";
+            gviz += "  " + std::to_string(bdd_id) + " -> " + std::to_string(node.high) +
+                    " [style=\"solid\"];\n";
+            gviz += "  " + std::to_string(bdd_id) + " -> " + std::to_string(node.low) +
+                    " [style=\"dashed\"];\n";
         } else if (node.type == Bdd_Node::Bdd_type::TRUE) {
             gviz += "  " + std::to_string(bdd_id) + " [label=\"TRUE\"];\n";
         } else if (node.type == Bdd_Node::Bdd_type::FALSE) {

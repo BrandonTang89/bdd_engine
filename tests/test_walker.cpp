@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "absl/strings/match.h"
 #include "catch2/catch_test_macros.hpp"
 #include "interp_tester.h"
