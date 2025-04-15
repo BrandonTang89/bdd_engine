@@ -3,7 +3,7 @@
 
 #include "absl/log/log.h"
 
-Walker::Walker() {
+Walker::Walker() : counter(2) {
     // Initialize the Walker
     Bdd_Node false_node{Bdd_Node::Bdd_type::FALSE, "false", 0, 0};
     Bdd_Node true_node{Bdd_Node::Bdd_type::TRUE, "true", 1, 1};
@@ -13,7 +13,6 @@ Walker::Walker() {
     id_to_iter[1] = node_to_id.find(true_node);
     is_sat_memo[0] = false;
     is_sat_memo[1] = true;
-    counter = 2;
 }
 
 std::string Walker::get_output() {
@@ -57,14 +56,14 @@ void Walker::walk_decl_stmt(const decl_stmt& statement) {
             globals[identifier.lexeme] = new_var;
             bdd_ordering_map[identifier.lexeme] = bdd_ordering.size();
             bdd_ordering.push_back(identifier.lexeme);
-            out << "Declared Symbolic Variable: " << identifier.lexeme << std::endl;
+            out << "Declared Symbolic Variable: " << identifier.lexeme << '\n';
         } else {
             if (std::holds_alternative<Bvar_ptype>(globals[identifier.lexeme])) {
-                out << "Variable already declared: " << identifier.lexeme << std::endl;
+                out << "Variable already declared: " << identifier.lexeme << '\n';
             } else {
                 out << "Variable name conflict (making a variable holding a bdd symbolic), "
                        "ignoring: "
-                    << identifier.lexeme << std::endl;
+                    << identifier.lexeme << '\n';
             }
         }
     }
@@ -78,7 +77,7 @@ void Walker::walk_assign_stmt(const assign_stmt& statement) {
     if (globals.find(statement.target->name.lexeme) != globals.end() &&
         !std::holds_alternative<Bdd_ptype>(globals[statement.target->name.lexeme])) {
         out << "Variable name conflict (assigning to symbolic variable), ignoring assignment of: "
-            << statement.target->name.lexeme << std::endl;
+            << statement.target->name.lexeme << '\n';
         return;
     }
 
@@ -87,7 +86,7 @@ void Walker::walk_assign_stmt(const assign_stmt& statement) {
     id_type bdd_id = bdd_id_opt.value();
     globals[statement.target->name.lexeme] = Bdd_ptype{statement.target->name.lexeme, bdd_id};
     out << "Assigned to " << statement.target->name.lexeme << " with BDD ID: " << bdd_id
-        << std::endl;
+        << '\n';
 }
 
 void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
@@ -100,8 +99,8 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
             auto bdd_id_opt = construct_bdd_safe(*statement.arguments[0]);
             if (!bdd_id_opt.has_value()) break;
             id_type bdd_id = bdd_id_opt.value();
-            out << "BDD ID: " << bdd_id << std::endl;
-            out << bdd_repr(bdd_id) << std::endl;
+            out << "BDD ID: " << bdd_id << '\n';
+            out << bdd_repr(bdd_id) << '\n';
             break;
         }
         case Token::Type::GRAPH_DISPLAY: {
@@ -112,7 +111,7 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
             if (!bdd_id_opt.has_value()) break;
             id_type bdd_id = bdd_id_opt.value();
             std::string gviz_rep = bdd_gviz_repr(bdd_id);
-            out << gviz_rep << std::endl;
+            out << gviz_rep << '\n';
             break;
         }
         case Token::Type::IS_SAT: {
@@ -120,16 +119,16 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
                 LOG(ERROR) << "Invalid number of arguments for is_sat";
                 return;
             }
-            LOG(INFO) << "Is SAT Function Called" << std::endl;
+            LOG(INFO) << "Is SAT Function Called" << '\n';
             auto bdd_id_opt = construct_bdd_safe(*statement.arguments[0]);
             if (!bdd_id_opt.has_value()) break;
             id_type bdd_id = bdd_id_opt.value();
             bool sat = is_sat(bdd_id);
 
             if (sat) {
-                out << "satisfiable" << std::endl;
+                out << "satisfiable" << '\n';
             } else {
-                out << "unsatisfiable" << std::endl;
+                out << "unsatisfiable" << '\n';
             }
             break;
         }
@@ -143,5 +142,5 @@ void Walker::walk_expr_stmt(const expr_stmt& statement) {
     auto bdd_id_opt = construct_bdd_safe(*statement.expression);
     if (!bdd_id_opt.has_value()) return;
 
-    out << "BDD ID: " << bdd_id_opt.value() << std::endl;
+    out << "BDD ID: " << bdd_id_opt.value() << '\n';
 }
