@@ -1,15 +1,13 @@
-#include <iostream>
 #include <optional>
 #include <variant>
 
-#include "absl/log/log.h"
 #include "walker.h"
 
 std::optional<id_type> Walker::construct_bdd_safe(const expr& x) {
     try {
         return construct_bdd(x);
     } catch (const std::exception& e) {
-        out << "Error constructing BDD: " << e.what();
+        out << "Error constructing BDD: " << e.what() << "\n";
         return {};
     }
 }
@@ -22,7 +20,7 @@ id_type Walker::construct_bdd(const expr& x) {
             if constexpr (std::is_same_v<T, bin_expr>) {
                 id_type left_bdd = construct_bdd(*expr.left);
                 id_type right_bdd = construct_bdd(*expr.right);
-                id_type combined_bdd;
+                id_type combined_bdd = 0;
                 if (expr.op.type == Token::Type::LAND) {
                     combined_bdd = and_bdd(left_bdd, right_bdd);
                 } else if (expr.op.type == Token::Type::LOR) {
@@ -108,8 +106,8 @@ id_type Walker::rec_apply_and(id_type a, id_type b) {
     const std::string& a_var = node_a.var;
     const std::string& b_var = node_b.var;
 
-    id_type nhigh;
-    id_type nlow;
+    id_type nhigh = 0;
+    id_type nlow = 0;
 
     bool pivot_on_a = bdd_ordering_map[a_var] <= bdd_ordering_map[b_var];
     if (a_var == b_var) {
@@ -156,8 +154,8 @@ id_type Walker::rec_apply_or(id_type a, id_type b) {
     const std::string& a_var = node_a.var;
     const std::string& b_var = node_b.var;
 
-    id_type nhigh;
-    id_type nlow;
+    id_type nhigh = 0;
+    id_type nlow = 0;
 
     bool pivot_on_a = bdd_ordering_map[a_var] <= bdd_ordering_map[b_var];
     if (a_var == b_var) {

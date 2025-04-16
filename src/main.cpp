@@ -36,6 +36,10 @@ static void evaluate(const std::string& user_input, Walker& walker) {
 }
 
 int main() {
+#ifndef NDEBUG
+    std::cout << ("Debug configuration!\n");
+#endif
+
     absl::InitializeLog();
     absl::SetStderrThreshold(absl::LogSeverity::kWarning);  // set logging
     std::cout << "Binary Decision Diagram Engine" << '\n';

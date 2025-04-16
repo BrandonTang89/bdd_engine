@@ -155,13 +155,24 @@ The true and false leaves are represented by the ids 1 and 0 respectively.
 
 Each required BDD is recursively constructed, ensuring that the reductions are done correctly during construction such that each reduced BDD has a unique ID within the graph.
 
-
-
+## Repository Layout
+The project is a tree-walk interpreter so it has 3 parts:
+- A lexer
+    - `token.h` contains the token types and scanner interface
+- A recursive descent parser
+    - `parser.h` contains the parser interface 
+    - `ast.h` contains the abstract syntax tree (AST) node types
+- A tree-walk interpreter
+    - `walker.h` contains the interface for the interpreter, including the run-time BDD graph
+    - `walker.cpp` implements the execution of statements
+    - `walker_bdd_manip.cpp` implements the run-time construction and manipulation of BDDs
+    - `walker_bdd_view.cpp` implements queries about the BDDs, such as satisfiability and display functions
 
 ## Building and Dependencies
-Uses CMake 3.23 and Conan 2.15.0. 
+Uses CMake 3.23 and Conan 2.15.0, tested on GCC 14.
 
-Built with GCC 13 with C++23 standard.
+Set up the Conan profile by following instructions from [Conan](https://docs.conan.io/2/tutorial/consuming_packages/build_simple_cmake_project.html).
+
 ```bash
 conan install . --output-folder=build --build=missing
 cmake --preset conan-release
