@@ -38,6 +38,7 @@ stmt parse_statement(const_iter& it) {
         case Token::Type::TREE_DISPLAY:
         case Token::Type::GRAPH_DISPLAY:
         case Token::Type::IS_SAT:
+        case Token::Type::SOURCE:
             return parse_func_call(it);
         default:  // assume expr statement
             return parse_expr_stmt(it);
@@ -86,11 +87,9 @@ assign_stmt parse_assign(const_iter& it) {
 func_call_stmt parse_func_call(const_iter& it) {
     func_call_stmt call{*it, {}};
     ++it;  // Skip the function name token
-    assert(it->type == Token::Type::LEFT_PAREN);
 
     while (true) {
         call.arguments.push_back(parse_expr(it));
-        assert(it->type == Token::Type::COMMA || it->type == Token::Type::RIGHT_PAREN);
 
         if (it->type == Token::Type::SEMICOLON) break;
     }

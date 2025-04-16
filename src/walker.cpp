@@ -1,7 +1,12 @@
 
 #include "walker.h"
 
+#include <fstream>
+#include <variant>
+
 #include "absl/log/log.h"
+#include "ast.h"
+#include "parser.h"
 
 Walker::Walker() : counter(2) {
     // Initialize the Walker
@@ -85,8 +90,7 @@ void Walker::walk_assign_stmt(const assign_stmt& statement) {
     if (!bdd_id_opt.has_value()) return;
     id_type bdd_id = bdd_id_opt.value();
     globals[statement.target->name.lexeme] = Bdd_ptype{statement.target->name.lexeme, bdd_id};
-    out << "Assigned to " << statement.target->name.lexeme << " with BDD ID: " << bdd_id
-        << '\n';
+    out << "Assigned to " << statement.target->name.lexeme << " with BDD ID: " << bdd_id << '\n';
 }
 
 void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
@@ -130,6 +134,51 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
             } else {
                 out << "unsatisfiable" << '\n';
             }
+            break;
+        }
+        case Token::Type::SOURCE: {
+            if (statement.arguments.size() != 1) {
+                LOG(ERROR) << "Invalid number of arguments for source";
+                return;
+            }
+            LOG(INFO) << "Source Function Called" << '\n';
+
+            if (!std::holds_alternative<identifier>(*statement.arguments[0])) {
+                LOG(ERROR) << "Invalid argument type for source";
+                return;
+            }
+
+            auto filename = std::get<identifier>(*statement.arguments[0]).name.lexeme;
+
+            // Read all of the file into the buffer
+            std::string buffer;
+            std::ifstream f(filename);
+            if (!f.is_open()) {
+                out << "Failed to open file: " << filename;
+                return;
+            }
+            f.seekg(0, std::ios::end);
+            buffer.resize(f.tellg());
+            f.seekg(0);
+            f.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
+            f.close();
+
+            if (f.fail()) {
+                out << "Failed to read file: " << filename;
+                return;
+            }
+
+            if (buffer.empty()) {
+                out << "File is empty: " << filename;
+                return;
+            }
+
+            std::vector<Token> stream = scan_to_tokens(buffer);
+            std::vector<stmt> statements = parse(stream);
+            for (const auto& statement : statements) {
+                walk(statement);
+            }
+
             break;
         }
         default:

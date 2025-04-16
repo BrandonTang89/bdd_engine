@@ -10,9 +10,10 @@ const std::unordered_map<std::string, Token::Type> keyword_map = {
     {"display_tree", Token::Type::TREE_DISPLAY},
     {"display_graph", Token::Type::GRAPH_DISPLAY},
     {"is_sat", Token::Type::IS_SAT},
+    {"source", Token::Type::SOURCE},
 };
 
-constexpr bool is_lexeme_char(char c) { return isalpha(c) || isdigit(c) || c == '_'; }
+constexpr bool is_lexeme_char(char c) { return isalpha(c) || isdigit(c) || c == '_' || c == '.'; }
 
 std::vector<Token> scan_to_tokens(const std::string& source) {
     std::vector<Token> tokens;

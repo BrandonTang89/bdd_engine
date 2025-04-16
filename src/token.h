@@ -33,6 +33,7 @@ struct Token {
         TREE_DISPLAY,
         GRAPH_DISPLAY,
         IS_SAT,
+        SOURCE,
     };
 
     Type type;

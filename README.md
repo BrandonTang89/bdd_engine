@@ -6,15 +6,17 @@ C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wiki
 
 *Meta Features*
 - Implement bank + garbage sweeping
-- Implement script import
 
 *Language Features*
 - Implement syntactic sugar for implies, iff, xor, etc.
 - Implement evaluation for BDDs under assignments
 
 
-## Language
-### Grammar
+# Language
+## Grammar
+The language ignores white space. Each statement is terminated by a semicolon.
+
+All variables are either BDD variables or symbolic variables used in BDD construction.
 ```
 statements:
     | statement+
@@ -29,6 +31,7 @@ function_name
     | "display_tree" 
     | "display_graph"
     | "is_sat"
+    | "source"
 
 expression:
     | conjuct ("|" conjuct)*
@@ -47,18 +50,8 @@ primary:
     | "false"
 ```
 
-### REPL Usage
-The application ignores white space. Each statement is terminated by a semicolon.
-
-All variables are either BDD variables or symbolic variables used in BDD construction.
-
-To be able to use up and down arrow keys to use previous commands, use `rlwrap` to run the binary.
-
-```bash
-rlwrap ./bdd_engine
-```
-
-#### Symbolic Variable Declaration
+## Semantics
+### Symbolic Variable Declaration
 We declare symbolic variables using the `bvar` keyword. 
 
 ```
@@ -68,10 +61,10 @@ This will create two symbolic variables `x` and `y`.
 
 The order in which sybolic variables are declared is important as this is their order within the BDDs.
 
-#### Expressions
+### Expressions
 All expressions are evaluated to form BDDs. An epression is either a conjunction, disjunction or negation of other expressions, or a primary expression. A primary expression is either a symbolic variable (declared with `bvar`), a boolean constant (`true` or `false`), a parenthesized expression or a BDD variable.
 
-#### Assignments
+### Assignments
 We can assign BDDs to any non-symbolic variables using the `set` keyword.
 
 ```
@@ -80,22 +73,24 @@ set b = !x | y;
 set c = a & b;
 ```
 
-#### Expression Statements
+### Expression Statements
 Writing just an expression will display the id of the BDD node that an expression corresponds to.
 
 ```
 a;
 ```
 
-#### Built-in Functions
+### Built-in Functions
 We have a few built-in functions to query about the BDDs:
 
-Display the BDD in a tree format:
+#### Display the BDD in a tree format
 ```
 display_tree <expression>
 ```
 
-Display a graph representation of the BDD:
+Displays the expression as an ASCII tree.
+
+#### Display a graph representation of the BDD
 ```
 display_graph <expression>
 ```
@@ -104,13 +99,28 @@ Prints a DOT language representation of the BDD that can be viewed with [Graphvi
 
 In the graph, the nodes are labelled with the BDD variables they pivot on. The solid edges represent high branches and the dashed edges represent low branches. The leaves are labelled with `TRUE` or `FALSE`.
 
-Check satisfiability of the BDD:
+#### Check satisfiability of the BDD
 ```
 is_sat <expression>
 ```
+Does a reachability check from the BDD node of the expression to the `TRUE` leaf node and prints that the expression is satisfiable or not.
 
+This reachability check is done with breath-first search (BFS)
 
-### Example Interaction
+#### Run a script file
+```
+source <filename>
+```
+
+Loads the entire file into memory, scans it, parses it and executes it. The file is expected to be a valid script.
+
+The filename should only consist of the following characters:
+- Digits
+- Lower and uppercase letters
+- Underscore (`_`)
+- Dot (`.`) 
+
+## Example Interaction
 ```
 Binary Decision Diagram Engine
 > bvar x, y, z;
@@ -148,14 +158,31 @@ digraph G {
 }
 ```
 
-## Architecture
+# Usage
+## REPL Usage
+The default way to use the application is as a REPL. The REPL will read a line of input, parse it and execute it. The REPL will print the result of the execution.
+
+To be able to use up and down arrow keys to use previous commands, use `rlwrap` to run the binary.
+
+```bash
+rlwrap ./bdd_engine
+```
+
+## Script Usage
+We can also pass a script file to the binary. The script file should be a valid script. The script file will be loaded into memory, scanned, parsed and executed.
+
+```bash
+./bdd_engine --source <script_file.bdd>
+```
+
+# Architecture
 All BDDs are stored together as a big implicit directed acyclic graph. Each BDD node is uniquely identified by an integer id. This helps to save memory space and makes comparision of BDDs easier. Specifically, two formulae are logically equivalent iff they have the same BDD id.
 
 The true and false leaves are represented by the ids 1 and 0 respectively.
 
 Each required BDD is recursively constructed, ensuring that the reductions are done correctly during construction such that each reduced BDD has a unique ID within the graph.
 
-## Repository Layout
+# Repository Layout
 The project is a tree-walk interpreter so it has 3 parts:
 - A lexer
     - `token.h` contains the token types and scanner interface
@@ -168,7 +195,7 @@ The project is a tree-walk interpreter so it has 3 parts:
     - `walker_bdd_manip.cpp` implements the run-time construction and manipulation of BDDs
     - `walker_bdd_view.cpp` implements queries about the BDDs, such as satisfiability and display functions
 
-## Building and Dependencies
+# Building and Dependencies
 Uses CMake 3.23 and Conan 2.15.0, tested on GCC 14.
 
 Set up the Conan profile by following instructions from [Conan](https://docs.conan.io/2/tutorial/consuming_packages/build_simple_cmake_project.html).
@@ -183,3 +210,7 @@ make -j 8
 
 Depends on `Abseil` and `Catch2`.
 
+## Unit Tests
+The tests are in written in the `tests` directory.
+
+After building the tests, we can run them using `make test` or (for more verbose output) `./tests`.

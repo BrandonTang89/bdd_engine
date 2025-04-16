@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "absl/strings/match.h"
 #include "catch2/catch_test_macros.hpp"
 #include "interp_tester.h"
@@ -17,10 +19,12 @@ TEST_CASE("Assignments and Usage") {
     SECTION("Reusing Assigned Variables") {
         interp.feed("set a = x & y;");
         interp.feed("set b = a | z;");
-        REQUIRE(interp.expr_tree_repr("b") == "x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))");
+        REQUIRE(interp.expr_tree_repr("b") ==
+                "x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))");
 
         interp.feed("set c = !a & z;");
-        REQUIRE(interp.expr_tree_repr("c") == "x ? (y ? (FALSE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))");
+        REQUIRE(interp.expr_tree_repr("c") ==
+                "x ? (y ? (FALSE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))");
     }
 
     SECTION("Overwriting Variables") {
@@ -33,10 +37,12 @@ TEST_CASE("Assignments and Usage") {
 
     SECTION("Complex Assignments") {
         interp.feed("set a = x & y | z;");
-        REQUIRE(interp.expr_tree_repr("a") == "x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))");
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))");
 
         interp.feed("set b = !a & x | y;");
-        REQUIRE(interp.expr_tree_repr("b") == "x ? (y ? (TRUE) : (z ? (FALSE) : (TRUE))) : (y ? (TRUE) : (FALSE))");
+        REQUIRE(interp.expr_tree_repr("b") ==
+                "x ? (y ? (TRUE) : (z ? (FALSE) : (TRUE))) : (y ? (TRUE) : (FALSE))");
     }
 }
 
@@ -128,5 +134,33 @@ TEST_CASE("Declaration Errors") {
         interp.feed("set a = true;");
         interp.feed("bvar a;");
         REQUIRE(absl::StrContains(interp.get_output(), "conflict"));
+    }
+}
+
+TEST_CASE("Source Function") {
+    InterpTester interp;
+
+    SECTION("Valid Source Code") {
+        std::string source_code = R"(
+            bvar x, y, z;
+            set a = x & y;
+            set b = a | z;
+            display_tree(a);
+        )";
+
+        std::ofstream source_file("test_source_code.txt");
+        source_file << source_code;
+        source_file.close();
+
+        interp.feed("source test_source_code.txt;");
+
+        REQUIRE(interp.expr_tree_repr("a") == "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+
+        std::remove("test_source_code.txt");
+    }
+
+    SECTION("Nonexistent Source File") {
+        interp.feed("source nonexistent_file.txt;");
+        REQUIRE(absl::StrContains(interp.get_output(), "Failed to open file"));
     }
 }

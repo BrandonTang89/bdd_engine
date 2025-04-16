@@ -5,6 +5,7 @@ Checks: >
   bugprone-*,
   cppcoreguidelines-*,
   portability-*,
+  abseil-*,
 
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'

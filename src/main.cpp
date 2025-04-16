@@ -1,7 +1,11 @@
 #include <iostream>
+#include <optional>
 #include <string>
 #include <vector>
 
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
+#include "absl/flags/usage.h"
 #include "absl/log/globals.h"
 #include "absl/log/initialize.h"
 #include "absl/log/log.h"
@@ -11,7 +15,7 @@
 
 constexpr bool echo_input = false;    // Set to true to echo input
 constexpr bool print_tokens = false;  // Set to true to print tokens
-constexpr bool print_ast = false;     // Set to true to print AST
+constexpr bool print_ast = true;      // Set to true to print AST
 
 // Evaluates a list of statements
 static void evaluate(const std::string& user_input, Walker& walker) {
@@ -35,17 +39,9 @@ static void evaluate(const std::string& user_input, Walker& walker) {
     }
 }
 
-int main() {
-#ifndef NDEBUG
-    std::cout << ("Debug configuration!\n");
-#endif
-
-    absl::InitializeLog();
-    absl::SetStderrThreshold(absl::LogSeverity::kWarning);  // set logging
-    std::cout << "Binary Decision Diagram Engine" << '\n';
-
+static void repl(Walker& walker) {
     // REPL
-    Walker walker;
+    std::cout << "Binary Decision Diagram Engine" << '\n';
     while (true) {
         std::string input;
         std::cout << "> ";
@@ -56,5 +52,33 @@ int main() {
         }
 
         evaluate(input, walker);
+    }
+}
+
+ABSL_FLAG(std::optional<std::string>, source, std::nullopt, "Input script to execute.");
+
+int main(int argc, char* argv[]) {
+#ifndef NDEBUG
+    std::cout << ("Debug configuration!\n");
+#endif
+
+    // Set Up
+    absl::SetProgramUsageMessage("Usage: " + std::string(*argv) +
+                                 " [--source <input_file>] [--help] [--version]");
+    absl::InitializeLog();
+    absl::SetStderrThreshold(absl::LogSeverity::kWarning);  // set logging
+    absl::ParseCommandLine(argc, argv);
+
+    // Start of Program
+    Walker walker;
+
+    std::optional<std::string> source = absl::GetFlag(FLAGS_source);
+    if (source.has_value()) {
+        const std::string& input = source.value();
+        std::string user_input = "source " + input + ";";
+        evaluate(user_input, walker);
+        std::cout << walker.get_output();
+    } else {
+        repl(walker);
     }
 }
