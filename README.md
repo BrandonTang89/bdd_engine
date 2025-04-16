@@ -183,7 +183,7 @@ The true and false leaves are represented by the ids 1 and 0 respectively.
 Each required BDD is recursively constructed, ensuring that the reductions are done correctly during construction such that each reduced BDD has a unique ID within the graph.
 
 # Repository Layout
-The project is a tree-walk interpreter so it has 3 parts:
+The project is a tree-walk interpreter so it has 3 internal parts:
 - A lexer
     - `token.h` contains the token types and scanner interface
 - A recursive descent parser
@@ -194,6 +194,11 @@ The project is a tree-walk interpreter so it has 3 parts:
     - `walker.cpp` implements the execution of statements
     - `walker_bdd_manip.cpp` implements the run-time construction and manipulation of BDDs
     - `walker_bdd_view.cpp` implements queries about the BDDs, such as satisfiability and display functions
+
+The REPL and overall application are implemented by the following
+- `main.cpp` contains the main function 
+- `repl.h` contains the REPL interface
+- `repl.cpp` implements the REPL interface
 
 # Building and Dependencies
 Uses CMake 3.23 and Conan 2.15.0, tested on GCC 14.
