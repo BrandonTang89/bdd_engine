@@ -79,17 +79,23 @@ class Walker {
     id_type construct_bdd(const expr& x);
     id_type get_id(const Bdd_Node& node);
 
-    std::map<std::tuple<id_type, id_type>, id_type> and_memo;
+    // BDD Construction
+
+    std::map<std::tuple<id_type, id_type>, id_type> binop_memo;
     id_type rec_apply_and(id_type a, id_type b);
-    id_type and_bdd(id_type a, id_type b);
-
-    std::map<std::tuple<id_type, id_type>, id_type> or_memo;
+    // id_type and_bdd(id_type a, id_type b);
     id_type rec_apply_or(id_type a, id_type b);
-    id_type or_bdd(id_type a, id_type b);
+    // id_type or_bdd(id_type a, id_type b);
 
-    std::map<id_type, id_type> not_memo;
+    std::map<id_type, id_type> unary_memo;
     id_type rec_apply_not(id_type a);
-    id_type negate_bdd(id_type a);
+    // id_type negate_bdd(id_type a);
+
+    std::map<std::tuple<id_type, size_t>, id_type> quantifier_memo; // (bdd_id, number_of_bound_vars_left)
+    template <typename Comb_Fn_Type>
+    id_type rec_apply_quant(id_type a, std::span<std::string> bound_vars, Comb_Fn_Type comb_fn);
+
+    // // BDD Viewing
 
     std::unordered_map<id_type, bool> is_sat_memo;  // check if BDD is satisfiable
     bool is_sat(id_type a);

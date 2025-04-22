@@ -6,6 +6,7 @@ C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wiki
 
 *Generic Tasks*
 - Write tests for the parser
+- Write benchmarks
 
 *Meta Features*
 - Implement bank + garbage sweeping
@@ -14,8 +15,7 @@ C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wiki
 - Change the syntax for `bvar` to avoid the commas
 - Implement syntactic sugar for implies, iff, xor, etc.
 - Implement evaluation for BDDs under assignments
-- Quantification (exists, forall) for BDDs
-  - Syntactic sugar for quantification over one variable only
+- Syntactic sugar for quantification over one variable only
 
 
 # Language

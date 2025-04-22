@@ -46,6 +46,35 @@ TEST_CASE("Assignments and Usage") {
     }
 }
 
+TEST_CASE("Constructing Expression with Quantifiers") {
+    InterpTester interp;
+    interp.feed("bvar x, y, z, w;");
+
+    SECTION("Single Bound Variable Quantifier") {
+        REQUIRE(interp.expr_tree_repr("exists (x) true") == "TRUE");
+        REQUIRE(interp.expr_tree_repr("forall (x) true") == "TRUE");
+        REQUIRE(interp.expr_tree_repr("exists (x) false") == "FALSE");
+        REQUIRE(interp.expr_tree_repr("forall (x) false") == "FALSE");
+
+        REQUIRE(interp.expr_tree_repr("forall (x) x") == "FALSE");
+        REQUIRE(interp.expr_tree_repr("exists (x) x") == "TRUE");
+        REQUIRE(interp.expr_tree_repr("forall (x) (x & y)") == "FALSE");
+        REQUIRE(interp.expr_tree_repr("exists (x) (x & y)") == "y ? (TRUE) : (FALSE)");
+    }
+
+    SECTION("Multiple Bound Variables") {
+        REQUIRE(interp.expr_tree_repr("forall (x y) (x | y)") == "FALSE");
+        REQUIRE(interp.expr_tree_repr("exists (x y) (x & y)") == "TRUE");
+        REQUIRE(interp.expr_tree_repr("forall (y x w) z") == "z ? (TRUE) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("exists (x y) (x & y & !z);") == "z ? (FALSE) : (TRUE)");
+    }
+
+    SECTION("Showing Precedence") {
+        REQUIRE(interp.expr_tree_repr("forall (x) x | forall (y) y") == "FALSE");
+        REQUIRE(interp.expr_tree_repr("exists (x) x & exists (y) y") == "TRUE");
+    }
+}
+
 TEST_CASE("Satisfiability Tests") {
     InterpTester interp;
     interp.feed("bvar x, y, z;");
