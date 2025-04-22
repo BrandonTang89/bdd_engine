@@ -7,6 +7,17 @@ std::string expr_repr(const expr& expression) {
             if constexpr (std::is_same_v<T, bin_expr>) {
                 return "BinExpr(" + expr_repr(*e.left) + ", " + e.op.lexeme + ", " +
                        expr_repr(*e.right) + ")";
+
+            } else if constexpr (std::is_same_v<T, quantifier_expr>) {
+                std::string result = "QuantifierExpr(" + e.quantifier.lexeme + " (";
+                for (const auto& id : e.bound_vars) {
+                    result += id.lexeme + ", ";
+                }
+                result.pop_back();  // Remove last space
+                result.pop_back();  // Remove last comma
+                result += "), ";
+                result += expr_repr(*e.body) + ")";
+                return result;
             } else if constexpr (std::is_same_v<T, unary_expr>) {
                 return "UnaExpr(" + e.op.lexeme + ", " + expr_repr(*e.operand) + ")";
             } else if constexpr (std::is_same_v<T, literal>) {

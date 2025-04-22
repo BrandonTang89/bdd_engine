@@ -4,12 +4,18 @@ C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wiki
 
 ## Todo
 
+*Generic Tasks*
+- Write tests for the parser
+
 *Meta Features*
 - Implement bank + garbage sweeping
 
 *Language Features*
+- Change the syntax for `bvar` to avoid the commas
 - Implement syntactic sugar for implies, iff, xor, etc.
 - Implement evaluation for BDDs under assignments
+- Quantification (exists, forall) for BDDs
+  - Syntactic sugar for quantification over one variable only
 
 
 # Language
@@ -37,9 +43,14 @@ expression:
     | conjuct ("|" conjuct)*
 
 conjuct:
-    | unary ("&" unary)*
+    | quantifier ("&" quantifier)*
 
-disjunct:
+quantifier:
+    | "exists" "(" IDENTIFIER+ ")" unary
+    | "forall" "(" IDENTIFIER+ ")" unary
+    | unary
+
+unary:
     | "!" unary
     | primary
 

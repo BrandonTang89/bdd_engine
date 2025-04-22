@@ -33,6 +33,9 @@ std::unique_ptr<expr> parse_expr(const_iter& it);
 // Parses a Conjunct Expression
 std::unique_ptr<expr> parse_conjuct(const_iter& it);
 
+// Prases a Quantifier Expression
+std::unique_ptr<expr> parse_quantifier(const_iter& it);
+
 // Parses a Unary Expression
 std::unique_ptr<expr> parse_unary(const_iter& it);
 

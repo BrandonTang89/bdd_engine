@@ -34,6 +34,10 @@ struct Token {
         GRAPH_DISPLAY,
         IS_SAT,
         SOURCE,
+
+        // Special Keywords for quantifiers
+        EXISTS,
+        FORALL,
     };
 
     Type type;

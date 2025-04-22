@@ -50,5 +50,5 @@
     "files.watcherExclude": {
         "**/target": true
     },
-    "clangd.arguments": ["--compile-commands-dir=build", "--clang-tidy"],
+    "clangd.arguments": ["--compile-commands-dir=build", "--clang-tidy", "--query-driver=\"/usr/bin/g++\""],
 }

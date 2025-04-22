@@ -51,7 +51,9 @@ decl_stmt parse_decl(const_iter& it) {
     decl_stmt decl;
     ++it;  // Skip the 'bvar' token
     while (true) {
-        assert(it->type == Token::Type::IDENTIFIER);
+        if (it->type != Token::Type::IDENTIFIER) {
+            throw std::runtime_error("[parse_decl] Expected identifier after 'bvar'");
+        }
         decl.identifiers.push_back(*it);
         ++it;
 
@@ -61,8 +63,7 @@ decl_stmt parse_decl(const_iter& it) {
         } else if (it->type == Token::Type::COMMA) {
             ++it;  // Skip the ','
         } else {
-            LOG(ERROR) << "Expected ',' or ';' after identifier";
-            throw std::runtime_error("Expected ',' or ';' after identifier");
+            throw std::runtime_error("[parse_decl] Expected ',' or ';' after identifier");
         }
     }
     return decl;
@@ -73,12 +74,16 @@ assign_stmt parse_assign(const_iter& it) {
     assign_stmt assign;
     it++;  // skip the 'set' token
     assign.target = parse_ident(it);
-    assert(it->type == Token::Type::EQUAL);
+
+    if (it->type != Token::Type::EQUAL) {
+        throw std::runtime_error("[parse_assign] Expected '=' after identifier");
+    }
     ++it;  // Skip the '=' token
 
     assign.value = parse_expr(it);
-
-    assert(it->type == Token::Type::SEMICOLON);
+    if (it->type != Token::Type::SEMICOLON) {
+        throw std::runtime_error("[parse_assign] Expected ';' after assignment");
+    }
     ++it;  // Skip the ';' token
     return assign;
 }
@@ -101,7 +106,11 @@ func_call_stmt parse_func_call(const_iter& it) {
 expr_stmt parse_expr_stmt(const_iter& it) {
     expr_stmt expr;
     expr.expression = parse_expr(it);
-    assert(it->type == Token::Type::SEMICOLON);
+
+    if (it->type != Token::Type::SEMICOLON) {
+        throw std::runtime_error("[parse_expr_stmt] Expected ';' after expression");
+    }
+
     ++it;  // Skip the ';' token
     return expr;
 }
@@ -121,14 +130,48 @@ std::unique_ptr<expr> parse_expr(const_iter& it) {
 
 // Parse a Conjunct Expression
 std::unique_ptr<expr> parse_conjuct(const_iter& it) {
-    auto unary_expr{parse_unary(it)};
+    auto unary_expr{parse_quantifier(it)};
     while (it->type == Token::Type::LAND) {
         auto op = *it;
         ++it;  // Skip the '&' token
-        auto right = parse_unary(it);
+        auto right = parse_quantifier(it);
         unary_expr = std::make_unique<expr>(bin_expr{std::move(unary_expr), std::move(right), op});
     }
     return unary_expr;
+}
+
+// Parse a Quantifier Expression
+std::unique_ptr<expr> parse_quantifier(const_iter& it) {
+    // exists '(' IDENTIFIER+ ')' unary
+    // forall '(' IDENTIFIER+ ')' unary
+
+    if (it->type == Token::Type::EXISTS || it->type == Token::Type::FORALL) {
+        auto quantifier = *it;
+        ++it;  // Skip the quantifier token
+        std::vector<Token> bound_vars;
+
+        if (it->type != Token::Type::LEFT_PAREN) {
+            throw std::runtime_error("[parse_quantifier] Expected '(' after quantifier");
+        }
+        ++it;  // Skip the '(' token
+
+        while (it->type == Token::Type::IDENTIFIER) {
+            bound_vars.push_back(*it);
+            ++it;  // Skip the identifier token
+        }
+
+        if (it->type != Token::Type::RIGHT_PAREN) {
+            throw std::runtime_error("[parse_quantifier] Expected ')' after bound variables");
+        }
+        ++it;  // Skip the ')' token
+        auto body = parse_unary(it);
+
+        return std::make_unique<expr>(
+            quantifier_expr{quantifier, std::move(bound_vars), std::move(body)});
+    } else {
+        // no quantifier
+        return parse_unary(it);
+    }
 }
 
 // Parse a Unary Expression
@@ -156,13 +199,14 @@ std::unique_ptr<expr> parse_primary(const_iter& it) {
         ++it;  // Skip the ')' token
         return expr;
     }
-    LOG(ERROR) << "Expected identifier or literal";
-    throw std::runtime_error("Expected identifier or literal");
+    throw std::runtime_error("[parse_primary] Expected identifier or literal");
 }
 
 // Parse an Identifier
 std::unique_ptr<identifier> parse_ident(const_iter& it) {
-    assert(it->type == Token::Type::IDENTIFIER);
+    if (it->type != Token::Type::IDENTIFIER) {
+        throw std::runtime_error("[parse_ident] Expected identifier");
+    }
     auto id = std::make_unique<identifier>(*it);
     ++it;  // Skip the identifier token
     return id;
@@ -170,7 +214,9 @@ std::unique_ptr<identifier> parse_ident(const_iter& it) {
 
 // Parse a Literal
 std::unique_ptr<literal> parse_literal(const_iter& it) {
-    assert(it->type == Token::Type::TRUE || it->type == Token::Type::FALSE);
+    if (it->type != Token::Type::TRUE && it->type != Token::Type::FALSE) {
+        throw std::runtime_error("[parse_literal] Expected literal");
+    }
     auto lit = std::make_unique<literal>(*it);
     ++it;  // Skip the literal token
     return lit;

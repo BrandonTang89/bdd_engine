@@ -11,6 +11,8 @@ const std::unordered_map<std::string, Token::Type> keyword_map = {
     {"display_graph", Token::Type::GRAPH_DISPLAY},
     {"is_sat", Token::Type::IS_SAT},
     {"source", Token::Type::SOURCE},
+    {"exists", Token::Type::EXISTS},
+    {"forall", Token::Type::FORALL},
 };
 
 constexpr bool is_lexeme_char(char c) { return isalpha(c) || isdigit(c) || c == '_' || c == '.'; }
