@@ -12,10 +12,8 @@ C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wiki
 - Implement bank + garbage sweeping
 
 *Language Features*
-- Change the syntax for `bvar` to avoid the commas
 - Implement syntactic sugar for implies, iff, xor, etc.
 - Implement evaluation for BDDs under assignments
-- Syntactic sugar for quantification over one variable only
 
 
 # Language
@@ -28,7 +26,7 @@ statements:
     | statement+
 
 statement: 
-    | "bvar" IDENTIFIER ("," IDENTIFIER)* ";"
+    | "bvar" IDENTIFIER* ";"
     | "set" IDENTIFIER "=" expression ";"
     | function_name expression+ ";"
     | expression ";"
@@ -48,6 +46,8 @@ conjuct:
 quantifier:
     | "exists" "(" IDENTIFIER+ ")" unary
     | "forall" "(" IDENTIFIER+ ")" unary
+    | "exists" IDENTIFIER unary
+    | "forall" IDENTIFIER unary
     | unary
 
 unary:

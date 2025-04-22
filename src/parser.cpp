@@ -50,23 +50,21 @@ stmt parse_statement(const_iter& it) {
 decl_stmt parse_decl(const_iter& it) {
     decl_stmt decl;
     ++it;  // Skip the 'bvar' token
-    while (true) {
-        if (it->type != Token::Type::IDENTIFIER) {
-            throw std::runtime_error("[parse_decl] Expected identifier after 'bvar'");
-        }
+    if (it->type != Token::Type::IDENTIFIER) {
+        throw std::runtime_error("[parse_decl] Expected identifier after 'bvar'");
+    }
+
+    while (it->type == Token::Type::IDENTIFIER) {
         decl.identifiers.push_back(*it);
         ++it;
-
-        if (it->type == Token::Type::SEMICOLON) {
-            ++it;  // Skip the ';'
-            break;
-        } else if (it->type == Token::Type::COMMA) {
-            ++it;  // Skip the ','
-        } else {
-            throw std::runtime_error("[parse_decl] Expected ',' or ';' after identifier");
-        }
     }
-    return decl;
+
+    if (it->type == Token::Type::SEMICOLON) {
+        ++it;  // Skip the ';'
+        return decl;
+    } else {
+        throw std::runtime_error("[parse_decl] Expected ';' after identifiers");
+    }
 }
 
 // Parse an Assignment Statement
@@ -150,22 +148,31 @@ std::unique_ptr<expr> parse_quantifier(const_iter& it) {
         ++it;  // Skip the quantifier token
         std::vector<Token> bound_vars;
 
-        if (it->type != Token::Type::LEFT_PAREN) {
-            throw std::runtime_error("[parse_quantifier] Expected '(' after quantifier");
-        }
-        ++it;  // Skip the '(' token
+        switch (it->type) {
+            case Token::Type::IDENTIFIER:
+                bound_vars.push_back(*it);
+                ++it;  // Skip the identifier token
+                break;
+            case Token::Type::LEFT_PAREN:
+                ++it;  // Skip the '(' token
 
-        while (it->type == Token::Type::IDENTIFIER) {
-            bound_vars.push_back(*it);
-            ++it;  // Skip the identifier token
+                while (it->type == Token::Type::IDENTIFIER) {
+                    bound_vars.push_back(*it);
+                    ++it;  // Skip the identifier token
+                }
+
+                if (it->type != Token::Type::RIGHT_PAREN) {
+                    throw std::runtime_error(
+                        "[parse_quantifier] Expected ')' after bound variables");
+                }
+                ++it;  // Skip the ')' token
+                break;
+            default:
+                throw std::runtime_error(
+                    "[parse_quantifier] Expected '(' or identifier after quantifier");
         }
 
-        if (it->type != Token::Type::RIGHT_PAREN) {
-            throw std::runtime_error("[parse_quantifier] Expected ')' after bound variables");
-        }
-        ++it;  // Skip the ')' token
         auto body = parse_unary(it);
-
         return std::make_unique<expr>(
             quantifier_expr{quantifier, std::move(bound_vars), std::move(body)});
     } else {

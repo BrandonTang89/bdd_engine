@@ -6,7 +6,7 @@
 
 TEST_CASE("Assignments and Usage") {
     InterpTester interp;
-    interp.feed("bvar x, y, z;");
+    interp.feed("bvar x y z;");
 
     SECTION("Simple Assignments") {
         interp.feed("set a = x & y;");
@@ -48,7 +48,7 @@ TEST_CASE("Assignments and Usage") {
 
 TEST_CASE("Constructing Expression with Quantifiers") {
     InterpTester interp;
-    interp.feed("bvar x, y, z, w;");
+    interp.feed("bvar x y z w;");
 
     SECTION("Single Bound Variable Quantifier") {
         REQUIRE(interp.expr_tree_repr("exists (x) true") == "TRUE");
@@ -60,6 +60,12 @@ TEST_CASE("Constructing Expression with Quantifiers") {
         REQUIRE(interp.expr_tree_repr("exists (x) x") == "TRUE");
         REQUIRE(interp.expr_tree_repr("forall (x) (x & y)") == "FALSE");
         REQUIRE(interp.expr_tree_repr("exists (x) (x & y)") == "y ? (TRUE) : (FALSE)");
+    }
+
+    SECTION("Single Bound Variable Semantic Sugar") {
+        REQUIRE(interp.expr_tree_repr("forall x x | x") == "x ? (TRUE) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("forall x (x | x)") == "FALSE");
+        REQUIRE(interp.expr_tree_repr("exists x (x & y)") == "y ? (TRUE) : (FALSE)");
     }
 
     SECTION("Multiple Bound Variables") {
@@ -77,7 +83,7 @@ TEST_CASE("Constructing Expression with Quantifiers") {
 
 TEST_CASE("Satisfiability Tests") {
     InterpTester interp;
-    interp.feed("bvar x, y, z;");
+    interp.feed("bvar x y z;");
 
     SECTION("Simple Satisfiability") {
         REQUIRE(interp.is_sat("true") == true);
@@ -132,7 +138,7 @@ TEST_CASE("Satisfiability Tests") {
 
 TEST_CASE("Assignment Errors") {
     InterpTester interp;
-    interp.feed("bvar x, y, z;");
+    interp.feed("bvar x y z;");
     SECTION("Assignment to Symbolic Variable") {
         interp.feed("set x = true;");
         REQUIRE(absl::StrContains(interp.get_output(), "conflict"));
@@ -152,7 +158,7 @@ TEST_CASE("Assignment Errors") {
 
 TEST_CASE("Declaration Errors") {
     InterpTester interp;
-    interp.feed("bvar x, y, z;");
+    interp.feed("bvar x y z;");
 
     SECTION("Redeclaration of Variables") {
         interp.feed("bvar x;");
@@ -171,7 +177,7 @@ TEST_CASE("Source Function") {
 
     SECTION("Valid Source Code") {
         std::string source_code = R"(
-            bvar x, y, z;
+            bvar x y z;
             set a = x & y;
             set b = a | z;
             display_tree(a);

@@ -3,9 +3,7 @@
 
 #include "absl/log/globals.h"
 #include "absl/log/initialize.h"
-#include "absl/log/log.h"
 #include "catch2/catch_session.hpp"
-#include "catch2/catch_test_macros.hpp"
 
 constexpr bool hide_stdout = true;
 

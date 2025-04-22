@@ -36,8 +36,9 @@ target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined)
 # Add tests
 enable_testing()
 add_executable(tests
-    tests/test_main.cpp  # Add your test files here
+    tests/test_main.cpp # Add your test files here
     tests/test_walker.cpp
+    tests/test_parser.cpp
     src/token.cpp
     src/parser.cpp
     src/ast.cpp
