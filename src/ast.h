@@ -44,6 +44,7 @@ struct func_call_stmt;
 struct decl_stmt;
 struct assign_stmt;
 using stmt = std::variant<std::monostate, expr_stmt, func_call_stmt, decl_stmt, assign_stmt>;
+
 struct expr_stmt {
     std::unique_ptr<expr> expression;
 };
@@ -63,3 +64,6 @@ struct assign_stmt {
 };
 
 std::string stmt_repr(const stmt& statement);
+
+static_assert(std::is_move_constructible_v<stmt>, "stmt must be movable");
+static_assert(std::is_move_constructible_v<expr>, "expr must be movable");

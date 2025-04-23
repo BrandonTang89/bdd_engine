@@ -173,8 +173,11 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
                 return;
             }
 
-            std::vector<Token> stream = scan_to_tokens(buffer);
-            std::vector<stmt> statements = parse(stream);
+            std::vector<stmt> statements = parse(buffer)
+                                               .or_else([]() -> std::optional<std::vector<stmt>> {
+                                                   return {std::vector<stmt>{}};
+                                               })
+                                               .value();
             for (const auto& statement : statements) {
                 walk(statement);
             }

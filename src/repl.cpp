@@ -21,7 +21,11 @@ void evaluate(const std::string& user_input, Walker& walker) {
         }
     }
 
-    std::vector<stmt> statements = parse(stream);
+    auto statements =
+        parse(stream)
+            .or_else([]() -> std::optional<std::vector<stmt>> { return {std::vector<stmt>{}}; })
+            .value();
+
     for (const auto& statement : statements) {
         if constexpr (print_ast) LOG(WARNING) << stmt_repr(statement);
         walker.walk(statement);

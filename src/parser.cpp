@@ -1,31 +1,46 @@
 // Recursive Descent Parser
 #include "parser.h"
 
+#include <optional>
+
 #include "absl/log/log.h"
 #include "ast.h"
 #include "token.h"
 
 // Parses a vector of tokens into an AST
-std::vector<stmt> parse(const std::vector<Token>& tokens) {
-    auto it = tokens.begin();
+std::optional<std::vector<stmt>> parse(const std::vector<Token>& tokens,
+                                       std::ostream& error_stream) {
+    // Tokenize the input string
+    const_iter it = tokens.begin();
     std::vector<stmt> statements;
+    bool has_errors = false;
     while (it != tokens.end()) {
         try {
-            statements.push_back(parse_statement(it));
-
+            statements.emplace_back(parse_statement(it));
+        } catch (const ParserException& e) {
+            has_errors = true;
+            error_stream << e.what() << "\n";
+            while (it != tokens.end() && it->type != Token::Type::SEMICOLON) {
+                ++it;  // Skip to the next statement
+            }
+            if (it != tokens.end()) {
+                ++it;  // Skip the ';' token
+            }
         } catch (const std::exception& e) {
-            LOG(ERROR) << "Error parsing statement: " << e.what();
+            LOG(ERROR) << "Unhandled Parsing Error: " << e.what();
             break;
         }
     }
-    return statements;
+    if (has_errors) {
+        return std::nullopt;  // Return nullopt if there were parsing errors
+    }
+    return statements;  // Return the parsed statements
 }
-
 // Combines the lexer and the parser
-std::vector<stmt> parse(const std::string& input) {
+std::optional<std::vector<stmt>> parse(const std::string& input, std::ostream& error_stream) {
     // Tokenize the input string
     auto tokens = scan_to_tokens(input);
-    return parse(tokens);
+    return parse(tokens, error_stream);
 }
 
 // // Parses a single statement
@@ -42,7 +57,6 @@ stmt parse_statement(const_iter& it) {
             return parse_func_call(it);
         default:  // assume expr statement
             return parse_expr_stmt(it);
-            throw std::runtime_error("Unknown statement type");
     }
 }
 
@@ -51,7 +65,7 @@ decl_stmt parse_decl(const_iter& it) {
     decl_stmt decl;
     ++it;  // Skip the 'bvar' token
     if (it->type != Token::Type::IDENTIFIER) {
-        throw std::runtime_error("[parse_decl] Expected identifier after 'bvar'");
+        throw ParserException("Expected identifier after 'bvar'", *it, __func__);
     }
 
     while (it->type == Token::Type::IDENTIFIER) {
@@ -63,7 +77,7 @@ decl_stmt parse_decl(const_iter& it) {
         ++it;  // Skip the ';'
         return decl;
     } else {
-        throw std::runtime_error("[parse_decl] Expected ';' after identifiers");
+        throw ParserException("Expected ';' after identifiers", *it, __func__);
     }
 }
 
@@ -74,13 +88,13 @@ assign_stmt parse_assign(const_iter& it) {
     assign.target = parse_ident(it);
 
     if (it->type != Token::Type::EQUAL) {
-        throw std::runtime_error("[parse_assign] Expected '=' after identifier");
+        throw ParserException("Expected '=' after identifier", *it, __func__);
     }
     ++it;  // Skip the '=' token
 
     assign.value = parse_expr(it);
     if (it->type != Token::Type::SEMICOLON) {
-        throw std::runtime_error("[parse_assign] Expected ';' after assignment");
+        throw ParserException("Expected ';' after assignment", *it, __func__);
     }
     ++it;  // Skip the ';' token
     return assign;
@@ -106,7 +120,7 @@ expr_stmt parse_expr_stmt(const_iter& it) {
     expr.expression = parse_expr(it);
 
     if (it->type != Token::Type::SEMICOLON) {
-        throw std::runtime_error("[parse_expr_stmt] Expected ';' after expression");
+        throw ParserException("Expected ';' after expression", *it, __func__);
     }
 
     ++it;  // Skip the ';' token
@@ -162,14 +176,13 @@ std::unique_ptr<expr> parse_quantifier(const_iter& it) {
                 }
 
                 if (it->type != Token::Type::RIGHT_PAREN) {
-                    throw std::runtime_error(
-                        "[parse_quantifier] Expected ')' after bound variables");
+                    throw ParserException("Expected ')' after bound variables", *it, __func__);
                 }
                 ++it;  // Skip the ')' token
                 break;
             default:
-                throw std::runtime_error(
-                    "[parse_quantifier] Expected '(' or identifier after quantifier");
+                throw ParserException("[Expected '(' or identifier after quantifier", *it,
+                                      __func__);
         }
 
         auto body = parse_unary(it);
@@ -206,13 +219,13 @@ std::unique_ptr<expr> parse_primary(const_iter& it) {
         ++it;  // Skip the ')' token
         return expr;
     }
-    throw std::runtime_error("[parse_primary] Expected identifier or literal");
+    throw ParserException("Expected identifier, literal, or '('", *it, __func__);
 }
 
 // Parse an Identifier
 std::unique_ptr<identifier> parse_ident(const_iter& it) {
     if (it->type != Token::Type::IDENTIFIER) {
-        throw std::runtime_error("[parse_ident] Expected identifier");
+        throw ParserException("Expected identifier", *it, __func__);
     }
     auto id = std::make_unique<identifier>(*it);
     ++it;  // Skip the identifier token
@@ -222,7 +235,7 @@ std::unique_ptr<identifier> parse_ident(const_iter& it) {
 // Parse a Literal
 std::unique_ptr<literal> parse_literal(const_iter& it) {
     if (it->type != Token::Type::TRUE && it->type != Token::Type::FALSE) {
-        throw std::runtime_error("[parse_literal] Expected literal");
+        throw ParserException("Expected literal", *it, __func__);
     }
     auto lit = std::make_unique<literal>(*it);
     ++it;  // Skip the literal token
