@@ -54,7 +54,6 @@ class Walker {
     // An instance of the tree-walk interpreter
     // Manages the environment of the interpreter and available BDDs in the memory
     // Side-effect free, output is written to the this->out stream
-
     friend class InterpTester;
 
    private:
@@ -66,7 +65,11 @@ class Walker {
     iter_type iter_to_false;
     iter_type iter_to_true;
 
+    // void execution_error(std::string message, std::string function_name,
+    //                          std::source_location = std::source_location::current());
     std::unordered_map<std::string, Ptype> globals;
+    void walk_raw(const stmt& statement);  // May throw execution exceptions, dispatches to the
+                                           // correct function
     void walk_decl_stmt(const decl_stmt& statement);
     void walk_assign_stmt(const assign_stmt& statement);
     void walk_func_call_stmt(const func_call_stmt& statement);
@@ -75,28 +78,23 @@ class Walker {
     std::vector<std::string> bdd_ordering;                       // for BDD ordering
     std::unordered_map<std::string, uint32_t> bdd_ordering_map;  // for BDD ordering
 
-    std::optional<id_type> construct_bdd_safe(const expr& x);
     id_type construct_bdd(const expr& x);
     id_type get_id(const Bdd_Node& node);
 
     // BDD Construction
-
     std::map<std::tuple<id_type, id_type>, id_type> binop_memo;
     id_type rec_apply_and(id_type a, id_type b);
-    // id_type and_bdd(id_type a, id_type b);
     id_type rec_apply_or(id_type a, id_type b);
-    // id_type or_bdd(id_type a, id_type b);
 
     std::map<id_type, id_type> unary_memo;
     id_type rec_apply_not(id_type a);
-    // id_type negate_bdd(id_type a);
 
-    std::map<std::tuple<id_type, size_t>, id_type> quantifier_memo; // (bdd_id, number_of_bound_vars_left)
+    std::map<std::tuple<id_type, size_t>, id_type>
+        quantifier_memo;  // (bdd_id, number_of_bound_vars_left)
     template <typename Comb_Fn_Type>
     id_type rec_apply_quant(id_type a, std::span<std::string> bound_vars, Comb_Fn_Type comb_fn);
 
     // // BDD Viewing
-
     std::unordered_map<id_type, bool> is_sat_memo;  // check if BDD is satisfiable
     bool is_sat(id_type a);
 
@@ -106,6 +104,7 @@ class Walker {
 
    public:
     Walker();
-    void walk(const stmt& statement);  // walk the AST and evaluate the statement
-    std::string get_output();          // clears the output buffer and returns the output
+    void walk_single(const stmt& statement);                    // Walk AST, handles exceptions
+    void walk_statements(const std::vector<stmt>& statements);  // Returns early on exceptions
+    std::string get_output();  // clears the output buffer and returns the output
 };

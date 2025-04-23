@@ -11,9 +11,7 @@ class InterpTester {
         auto estmts = parse(tokens);
         assert(estmts.has_value());  // no parser error in interpreter tester
 
-        for (const auto& statement : *estmts) {
-            walker.walk(statement);
-        }
+        walker.walk_statements(*estmts);
     }
 
     id_type interpret_expr(std::string input) {

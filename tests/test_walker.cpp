@@ -152,7 +152,7 @@ TEST_CASE("Assignment Errors") {
 
     SECTION("Assignment to Invalid Expression") {
         interp.feed("set a = a;");
-        REQUIRE(absl::StrContains(interp.get_output(), "Error"));
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
     }
 }
 
@@ -169,6 +169,19 @@ TEST_CASE("Declaration Errors") {
         interp.feed("set a = true;");
         interp.feed("bvar a;");
         REQUIRE(absl::StrContains(interp.get_output(), "conflict"));
+    }
+}
+
+TEST_CASE("Multiple Errors") {
+    InterpTester interp;
+
+    SECTION("We should stop execution on the first error") {
+        interp.feed("set a = a; bvar x;");
+
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+
+        interp.feed("bvar x;");
+        REQUIRE(absl::StrContains(interp.get_output(), "Declared Symbolic Variable"));
     }
 }
 

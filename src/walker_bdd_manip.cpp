@@ -1,19 +1,10 @@
 #include <cassert>
 #include <cstddef>
-#include <optional>
 #include <ranges>
 #include <variant>
 
+#include "engine_exceptions.h"
 #include "walker.h"
-
-std::optional<id_type> Walker::construct_bdd_safe(const expr& x) {
-    try {
-        return construct_bdd(x);
-    } catch (const std::exception& e) {
-        out << "Error constructing BDD: " << e.what() << "\n";
-        return {};
-    }
-}
 
 id_type Walker::construct_bdd(const expr& x) {
     id_type ret_id{};
@@ -28,10 +19,9 @@ id_type Walker::construct_bdd(const expr& x) {
                 if (expr.op.type == Token::Type::LAND) {
                     combined_bdd = rec_apply_and(left_bdd, right_bdd);
                 } else if (expr.op.type == Token::Type::LOR) {
-                    // Handle logical OR
                     combined_bdd = rec_apply_or(left_bdd, right_bdd);
                 } else {
-                    throw std::runtime_error("Unsupported binary operator");
+                    throw std::runtime_error("Unsupported binary operator" + expr.op.lexeme);
                 }
                 return ret_id = combined_bdd;
             } else if constexpr (std::is_same_v<T, quantifier_expr>) {
@@ -108,7 +98,7 @@ id_type Walker::construct_bdd(const expr& x) {
                         return ret_id = std::get<Bdd_ptype>(globals[expr.name.lexeme]).id;
                     }
                 } else {
-                    throw std::runtime_error("Identifier not found in globals");
+                    throw ExecutionException("Variable not found: " + expr.name.lexeme, "Walker::construct_bdd");
                 }
             } else {
                 return static_cast<id_type>(1);

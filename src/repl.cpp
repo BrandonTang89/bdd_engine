@@ -31,11 +31,8 @@ void evaluate(const std::string& user_input, Walker& walker) {
         return;
     }
 
-    for (const auto& statement : *estmt) {
-        if constexpr (print_ast) LOG(WARNING) << stmt_repr(statement);
-        walker.walk(statement);
-        std::cout << walker.get_output();
-    }
+    walker.walk_statements(*estmt);
+    std::cout << walker.get_output();
 }
 
 void repl(Walker& walker) {

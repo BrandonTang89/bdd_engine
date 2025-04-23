@@ -10,6 +10,8 @@
 #include "repl.h"
 #include "walker.h"
 
+#include "config.h"
+
 ABSL_FLAG(std::optional<std::string>, source, std::nullopt, "Input script to execute.");
 
 int main(int argc, char* argv[]) {
@@ -20,7 +22,7 @@ int main(int argc, char* argv[]) {
     absl::SetProgramUsageMessage("Usage: " + std::string(*argv) +
                                  " [--source <input_file>] [--help] [--version]");
     absl::InitializeLog();
-    absl::SetStderrThreshold(absl::LogSeverity::kWarning);  // set logging
+    absl::SetStderrThreshold(warning_level);  // set logging
     absl::ParseCommandLine(argc, argv);
 
     // Start of Program
