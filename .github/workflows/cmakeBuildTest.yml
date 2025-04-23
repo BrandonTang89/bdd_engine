@@ -27,14 +27,14 @@ jobs:
 
       - name: Install Conan Dependencies
         run: |
-          touch ~/.conan/profiles/default
-          echo "arch=x86_64" > ~/.conan/profiles/default
-          echo "build_type=${{env.BUILD_TYPE}}" >> ~/.conan/profiles/default
-          echo "compiler=gcc" >> ~/.conan/profiles/default
-          echo "compiler.cppstd=23" >> ~/.conan/profiles/default
-          echo "compiler.version=14" >> ~/.conan/profiles/default
-          echo "compiler.libcxx=libstdc++11" >> ~/.conan/profiles/default
-          echo "os=Linux" >> ~/.conan/profiles/default
+          mkdir -p ~/.conan2/profiles
+          echo "arch=x86_64" > ~/.conan2/profiles/default
+          echo "build_type=${{env.BUILD_TYPE}}" >> ~/.conan2/profiles/default
+          echo "compiler=gcc" >> ~/.conan/profiles2/default
+          echo "compiler.cppstd=23" >> ~/.conan/profiles2/default
+          echo "compiler.version=14" >> ~/.conan/profiles2/default
+          echo "compiler.libcxx=libstdc++11" >> ~/.conan/profiles2/default
+          echo "os=Linux" >> ~/.conan/profiles2/default
           conan install . --output-folder=build --build=missing
 
       - name: Configure CMake
