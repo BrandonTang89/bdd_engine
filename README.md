@@ -70,7 +70,7 @@ During execution, if any statement is invalid, the execution will stop and the e
 We declare symbolic variables using the `bvar` keyword. 
 
 ```
-bvar x, y; 
+bvar x y; 
 ```
 This will create two symbolic variables `x` and `y`.
 
@@ -138,26 +138,20 @@ The filename should only consist of the following characters:
 ## Example Interaction
 ```
 Binary Decision Diagram Engine
-> bvar x, y, z;
-Input: bvar x, y, z;
-Declared Symbolic Variable: x
+>> bvar x y z; 
+Declared Symbolic Variable: **x**
 Declared Symbolic Variable: y
 Declared Symbolic Variable: z
-> x & y;
-Input: x & y;
+>> x & y;
 BDD ID: 4
-> set a = x & y | z;
-Input: set a = x & y | z;
+>> set a = x & y | z; 
 Assigned to a with BDD ID: 7
-> display_tree a;
-Input: display_tree a;
+>> display_tree a; 
 BDD ID: 7
-BDD Representation: x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))
-> set b = x & true & !a;
-Input: set b = x & true & !a;
+x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))
+>> set b = x & true & !a; 
 Assigned to b with BDD ID: 11
-> display_graph b;
-Input: display_graph b;
+>> display_graph b;
 digraph G {
   1 [label="TRUE"];
   8 [label="z"];
@@ -171,6 +165,9 @@ digraph G {
   11 -> 9 [style="solid"];
   11 -> 0 [style="dashed"];
 }
+>> display_tree (exists x b); 
+BDD ID: 9
+y ? (FALSE) : (z ? (FALSE) : (TRUE))
 ```
 
 # Usage

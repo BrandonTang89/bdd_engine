@@ -5,6 +5,7 @@
 
 #include "absl/log/log.h"
 #include "ast.h"
+#include "colours.h"
 #include "config.h"
 #include "engine_exceptions.h"
 #include "parser.h"
@@ -27,12 +28,14 @@ std::string Walker::get_output() {
     return output;
 }
 
-void Walker::walk_statements(const std::vector<stmt>& statements) {
+void Walker::walk_statements(const std::span<stmt>& statements) {
     for (const auto& statement : statements) {
         try {
             walk_raw(statement);
         } catch (const ExecutionException& e) {
+            if constexpr (use_colours) set_colour(out, Colour::RED);
             out << e.what() << '\n';
+            if constexpr (use_colours) set_colour(out);
             return;
         } catch (const std::exception& e) {
             out << "Unhandled Execution Error: " << e.what() << '\n';
@@ -46,7 +49,9 @@ void Walker::walk_single(const stmt& statement) {
     try {
         walk_raw(statement);
     } catch (const ExecutionException& e) {
+        if constexpr (use_colours) set_colour(out, Colour::RED);
         out << e.what() << '\n';
+        if constexpr (use_colours) set_colour(out);
     } catch (const std::exception& e) {
         out << "Unhandled Execution Error: " << e.what() << '\n';
     }

@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "absl/log/log.h"
+#include "colours.h"
 #include "config.h"
 #include "parser.h"
 #include "token.h"
@@ -25,21 +26,25 @@ void evaluate(const std::string& user_input, Walker& walker) {
     std::vector<stmt> statements = {};
 
     if (!estmt.has_value()) {
+        set_colour(std::cout, Colour::RED);
         for (const auto& error : estmt.error()) {
-            std::cerr << error.what() << '\n';
+            std::cout << error.what() << '\n';
         }
+        set_colour(std::cout);
         return;
     }
 
     walker.walk_statements(*estmt);
+
     std::cout << walker.get_output();
 }
 
 void repl(Walker& walker) {
     std::cout << "Binary Decision Diagram Engine" << '\n';
+
     while (true) {
         std::string input;
-        std::cout << "> ";
+        output_with_colour(std::cout, Colour::PURPLE, ">> ");
         while (input.empty() || input.back() != ';') {
             std::string line;
             std::getline(std::cin, line);

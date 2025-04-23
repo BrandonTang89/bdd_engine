@@ -105,6 +105,6 @@ class Walker {
    public:
     Walker();
     void walk_single(const stmt& statement);                    // Walk AST, handles exceptions
-    void walk_statements(const std::vector<stmt>& statements);  // Returns early on exceptions
+    void walk_statements(const std::span<stmt>& statements);  // Returns early on exceptions
     std::string get_output();  // clears the output buffer and returns the output
 };
