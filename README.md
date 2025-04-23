@@ -1,5 +1,7 @@
 # BDD Engine
 
+[![CMake Build and Test](https://github.com/BrandonTang89/bdd_engine/actions/workflows/cmakeBuildTest.yml/badge.svg)](https://github.com/BrandonTang89/bdd_engine/actions/workflows/cmakeBuildTest.yml)
+
 C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wikipedia.org/wiki/Binary_decision_diagram) for Propositional Formulae Manipulation.
 
 ## Todo
