@@ -2,9 +2,9 @@ name: CMake Build and Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -15,20 +15,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: turtlebrowser/get-conan@v1.2
-    - name: Install Conan Dependencies
-      run: |
-        conan profile detect --force
-        conan install . --output-folder=build --build=missing
+      - name: switch to gcc-14
+        run: |
+          sudo apt install gcc-14 g++-14
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 --slave /usr/bin/g++ g++ /usr/bin/g++-14 --slave /usr/bin/gcov gcov /usr/bin/gcov-14
+          sudo update-alternatives --set gcc /usr/bin/gcc-14
 
-    - name: Configure CMake
-      run: cmake --preset conan-release
+      - uses: actions/checkout@v4
 
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build 
+      - uses: turtlebrowser/get-conan@v1.2
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C
+      - name: Install Conan Dependencies
+        run: |
+          touch ~/.conan/profiles/default
+          echo "arch=x86_64" > ~/.conan/profiles/default
+          echo "build_type=${{env.BUILD_TYPE}}" >> ~/.conan/profiles/default
+          echo "compiler=gcc" >> ~/.conan/profiles/default
+          echo "compiler.cppstd=23" >> ~/.conan/profiles/default
+          echo "compiler.version=14" >> ~/.conan/profiles/default
+          echo "compiler.libcxx=libstdc++11" >> ~/.conan/profiles/default
+          echo "os=Linux" >> ~/.conan/profiles/default
+          conan install . --output-folder=build --build=missing
 
+      - name: Configure CMake
+        run: cmake --preset conan-release
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C
