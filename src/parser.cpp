@@ -1,25 +1,23 @@
 // Recursive Descent Parser
 #include "parser.h"
 
-#include <optional>
-
 #include "absl/log/log.h"
 #include "ast.h"
 #include "token.h"
 
 // Parses a vector of tokens into an AST
-std::optional<std::vector<stmt>> parse(const std::vector<Token>& tokens,
-                                       std::ostream& error_stream) {
+parse_result_t parse(const std::vector<Token>& tokens) {
     // Tokenize the input string
     const_iter it = tokens.begin();
     std::vector<stmt> statements;
+    std::vector<ParserException> errors;
     bool has_errors = false;
     while (it != tokens.end()) {
         try {
             statements.emplace_back(parse_statement(it));
         } catch (const ParserException& e) {
             has_errors = true;
-            error_stream << e.what() << "\n";
+            errors.push_back(e);
             while (it != tokens.end() && it->type != Token::Type::SEMICOLON) {
                 ++it;  // Skip to the next statement
             }
@@ -32,15 +30,15 @@ std::optional<std::vector<stmt>> parse(const std::vector<Token>& tokens,
         }
     }
     if (has_errors) {
-        return std::nullopt;  // Return nullopt if there were parsing errors
+        return std::unexpected(errors);  // Return the errors if any occurred
     }
     return statements;  // Return the parsed statements
 }
 // Combines the lexer and the parser
-std::optional<std::vector<stmt>> parse(const std::string& input, std::ostream& error_stream) {
+parse_result_t parse(const std::string& input) {
     // Tokenize the input string
     auto tokens = scan_to_tokens(input);
-    return parse(tokens, error_stream);
+    return parse(tokens);
 }
 
 // // Parses a single statement

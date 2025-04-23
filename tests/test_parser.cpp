@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "absl/strings/match.h"
+#include "absl/strings/str_split.h"
 #include "catch2/catch_test_macros.hpp"
 #include "parser_tester.h"
 
@@ -42,5 +43,20 @@ TEST_CASE("Invalid Declaration") {
         parser_tester.feed(input);
         std::string error = parser_tester.get_parser_error();
         REQUIRE(absl::StrContains(error, "ParserException"));
+    }
+
+    SECTION("Multiple errors detected at once") {
+        std::string input = R"(
+            bvar x, y, z;
+            set a x y;
+        )";
+        parser_tester.feed(input);
+        std::string error = parser_tester.get_parser_error();
+        std::vector<std::string> error_lines = absl::StrSplit(error, '\n', absl::SkipEmpty());
+
+        REQUIRE(error_lines.size() == 2);
+        for (const auto& line : error_lines) {
+            REQUIRE(absl::StrContains(line, "ParserException"));
+        }
     }
 }

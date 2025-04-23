@@ -5,7 +5,6 @@ C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wiki
 ## Todo
 
 *Generic Tasks*
-- Write tests for the parser
 - Write benchmarks
 
 *Meta Features*
@@ -199,6 +198,8 @@ The project is a tree-walk interpreter so it has 3 internal parts:
     - `token.h` contains the token types and scanner interface
 - A recursive descent parser
     - `parser.h` contains the parser interface 
+      - The parser has a custom parser exception class for handling errors
+      - A call to the `parse` function returns an `expected` object that either has the parsed ASTs or a list of parse errors.
     - `ast.h` contains the abstract syntax tree (AST) node types
 - A tree-walk interpreter
     - `walker.h` contains the interface for the interpreter, including the run-time BDD graph

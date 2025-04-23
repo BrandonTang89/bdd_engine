@@ -173,12 +173,15 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
                 return;
             }
 
-            std::vector<stmt> statements = parse(buffer)
-                                               .or_else([]() -> std::optional<std::vector<stmt>> {
-                                                   return {std::vector<stmt>{}};
-                                               })
-                                               .value();
-            for (const auto& statement : statements) {
+            parse_result_t estmts = parse(buffer);
+            if (!estmts.has_value()) {
+                for (const auto& error : estmts.error()) {
+                    out << error.what() << '\n';
+                }
+                return;
+            }
+
+            for (const auto& statement : *estmts) {
                 walk(statement);
             }
 

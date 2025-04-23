@@ -7,11 +7,11 @@ class InterpTester {
    public:
     void feed(const std::string& input) {
         auto tokens = scan_to_tokens(input);
-        auto statements =
-            parse(tokens, parser_error_stream)
-                .or_else([]() -> std::optional<std::vector<stmt>> { return {std::vector<stmt>{}}; })
-                .value();
-        for (const auto& statement : statements) {
+
+        auto estmts = parse(tokens);
+        assert(estmts.has_value());  // no parser error in interpreter tester
+
+        for (const auto& statement : *estmts) {
             walker.walk(statement);
         }
     }

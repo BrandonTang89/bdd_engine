@@ -2,19 +2,22 @@
 
 #include "../src/parser.h"
 class ParserTester {
-   public:
+   private:
     std::ostringstream parser_error_stream{};
 
+   public:
     ParserTester() = default;
 
     // Test the parser with a given input string
     std::vector<stmt> feed(const std::string& input) {
-        auto tokens = scan_to_tokens(input);
-        auto statements =
-            parse(tokens, parser_error_stream)
-                .or_else([]() -> std::optional<std::vector<stmt>> { return std::vector<stmt>(); })
-                .value();
-        return statements;
+        parse_result_t estmts = parse(input);
+        if (!estmts.has_value()) {
+            for (const auto& error : estmts.error()) {
+                parser_error_stream << error.what() << '\n';
+            }
+            return {};
+        } else
+            return std::move(*estmts);
     }
 
     // Get the parser error output

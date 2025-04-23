@@ -21,12 +21,17 @@ void evaluate(const std::string& user_input, Walker& walker) {
         }
     }
 
-    auto statements =
-        parse(stream)
-            .or_else([]() -> std::optional<std::vector<stmt>> { return {std::vector<stmt>{}}; })
-            .value();
+    auto estmt = parse(stream);
+    std::vector<stmt> statements = {};
 
-    for (const auto& statement : statements) {
+    if (!estmt.has_value()) {
+        for (const auto& error : estmt.error()) {
+            std::cerr << error.what() << '\n';
+        }
+        return;
+    }
+
+    for (const auto& statement : *estmt) {
         if constexpr (print_ast) LOG(WARNING) << stmt_repr(statement);
         walker.walk(statement);
         std::cout << walker.get_output();

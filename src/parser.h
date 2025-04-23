@@ -4,7 +4,6 @@
 #include <exception>
 #include <expected>
 #include <format>
-#include <iostream>
 #include <source_location>
 #include <vector>
 
@@ -37,16 +36,13 @@ class ParserException : public std::exception {
     }
 };
 
-using estmt = std::expected<stmt, ParserException>;
-
 // Type alias for a constant iterator over expressions
 using const_iter = std::vector<Token>::const_iterator;
 
 // Parses a vector of expressions into an Abstract Syntax Tree (AST)
-std::optional<std::vector<stmt>> parse(const std::vector<Token>& tokens,
-                                       std::ostream& error_stream = std::cerr);
-std::optional<std::vector<stmt>> parse(const std::string& input,
-                                       std::ostream& error_stream = std::cerr);
+using parse_result_t = std::expected<std::vector<stmt>, std::vector<ParserException>>;
+parse_result_t parse(const std::vector<Token>& tokens);
+parse_result_t parse(const std::string& input);
 
 // Parses a single statement
 stmt parse_statement(const_iter& it);
