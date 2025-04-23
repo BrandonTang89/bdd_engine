@@ -61,6 +61,9 @@ primary:
 ```
 
 ## Semantics
+### Parsing vs Execution
+When you give input, either via the REPL or using `source`, each statement of the input is parsed into an AST. If any statement is invalid, none of the statements are executed. The parser will return a list of parse errors which will be printed to the console.
+
 ### Symbolic Variable Declaration
 We declare symbolic variables using the `bvar` keyword. 
 
