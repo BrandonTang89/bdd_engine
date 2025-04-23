@@ -7,7 +7,6 @@ on:
     branches: ["main"]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
 jobs:
@@ -25,7 +24,7 @@ jobs:
 
       - uses: turtlebrowser/get-conan@v1.2
 
-      - name: Install Conan Dependencies
+      - name: Configure Conan Profile
         run: |
           mkdir -p ~/.conan2/profiles
           echo "[settings]" > ~/.conan2/profiles/default
@@ -36,7 +35,9 @@ jobs:
           echo "compiler.version=14" >> ~/.conan2/profiles/default
           echo "compiler.libcxx=libstdc++11" >> ~/.conan2/profiles/default
           echo "os=Linux" >> ~/.conan2/profiles/default
-          conan install . --output-folder=build --build=missing
+
+      - name: Install Conan dependencies
+        run: conan install . --output-folder=build --build=missing
 
       - name: Configure CMake
         run: cmake --preset conan-release
@@ -46,4 +47,4 @@ jobs:
 
       - name: Test
         working-directory: ${{github.workspace}}/build
-        run: ctest -C
+        run: ctest
