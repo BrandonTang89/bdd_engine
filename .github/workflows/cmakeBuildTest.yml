@@ -30,11 +30,11 @@ jobs:
           mkdir -p ~/.conan2/profiles
           echo "arch=x86_64" > ~/.conan2/profiles/default
           echo "build_type=${{env.BUILD_TYPE}}" >> ~/.conan2/profiles/default
-          echo "compiler=gcc" >> ~/.conan/profiles2/default
-          echo "compiler.cppstd=23" >> ~/.conan/profiles2/default
-          echo "compiler.version=14" >> ~/.conan/profiles2/default
-          echo "compiler.libcxx=libstdc++11" >> ~/.conan/profiles2/default
-          echo "os=Linux" >> ~/.conan/profiles2/default
+          echo "compiler=gcc" >> ~/.conan2/profiles/default
+          echo "compiler.cppstd=23" >> ~/.conan2/profiles/default
+          echo "compiler.version=14" >> ~/.conan2/profiles/default
+          echo "compiler.libcxx=libstdc++11" >> ~/.conan2/profiles/default
+          echo "os=Linux" >> ~/.conan2/profiles/default
           conan install . --output-folder=build --build=missing
 
       - name: Configure CMake
