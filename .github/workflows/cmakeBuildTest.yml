@@ -28,7 +28,8 @@ jobs:
       - name: Install Conan Dependencies
         run: |
           mkdir -p ~/.conan2/profiles
-          echo "arch=x86_64" > ~/.conan2/profiles/default
+          echo "[settings]" > ~/.conan2/profiles/default
+          echo "arch=x86_64" >> ~/.conan2/profiles/default
           echo "build_type=${{env.BUILD_TYPE}}" >> ~/.conan2/profiles/default
           echo "compiler=gcc" >> ~/.conan2/profiles/default
           echo "compiler.cppstd=23" >> ~/.conan2/profiles/default
