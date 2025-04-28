@@ -26,7 +26,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} abseil::abseil)
 
 # Compile Flags
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -fmodules)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
 target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined)
 target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined)
 
