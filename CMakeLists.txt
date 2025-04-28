@@ -1,10 +1,8 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.30)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 project(bdd_engine)
 
 # Include Conan-generated files
@@ -28,10 +26,9 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} abseil::abseil)
 
 # Compile Flags
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -fmodules)
 target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined)
 target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined)
-
 
 # Add tests
 enable_testing()
@@ -39,6 +36,7 @@ add_executable(tests
     tests/test_main.cpp # Add your test files here
     tests/test_walker.cpp
     tests/test_parser.cpp
+    tests/benchmark_walker.cpp
     src/token.cpp
     src/parser.cpp
     src/ast.cpp

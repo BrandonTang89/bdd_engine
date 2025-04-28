@@ -7,7 +7,7 @@ C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wiki
 ## Todo
 
 *Generic Tasks*
-- Write benchmarks
+- Expand benchmarks
 
 *Meta Features*
 - Implement bank + garbage sweeping
@@ -235,3 +235,5 @@ Depends on `Abseil` and `Catch2`.
 The tests are in written in the `tests` directory.
 
 After building the tests, we can run them using `make test` or (for more verbose output) `./tests`.
+
+We can run benchmarks with `./tests "[!-benchmark]"` to get the benchmark results.
