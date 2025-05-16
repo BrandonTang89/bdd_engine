@@ -37,14 +37,13 @@ jobs:
           echo "os=Linux" >> ~/.conan2/profiles/default
 
       - name: Install Conan dependencies
-        run: conan install . --output-folder=build --build=missing
-
-      - name: Configure CMake
-        run: cmake --preset conan-release
+        run: |
+          mkdir cmake_build
+          cd cmake_build
+          cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build
+        run: cmake --build .
 
       - name: Test
-        working-directory: ${{github.workspace}}/build
         run: ctest
