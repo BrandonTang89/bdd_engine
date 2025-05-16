@@ -217,19 +217,23 @@ The REPL and overall application are implemented by the following
 - `repl.cpp` implements the REPL interface
 
 # Building and Dependencies
-Uses CMake 3.23 and Conan 2.15.0, tested on GCC 14.
-
-Set up the Conan profile by following instructions from [Conan](https://docs.conan.io/2/tutorial/consuming_packages/build_simple_cmake_project.html).
-
-```bash
-conan install . --output-folder=build --build=missing
-cmake --preset conan-release
-
-cd build
-make -j 8
-```
+Uses CMake 3.31 and Conan 2.15.0, tested on GCC 14.
 
 Depends on `Abseil` and `Catch2`.
+
+The easiest way to configure and build is using the Conan extension in CLion.
+
+
+[//]: # (Set up the Conan profile by following instructions from [Conan]&#40;https://docs.conan.io/2/tutorial/consuming_packages/build_simple_cmake_project.html&#41;.)
+
+[//]: # ()
+[//]: # (```bash)
+[//]: # (conan install . --output-folder=build --build=missing)
+[//]: # (cmake --preset conan-release)
+[//]: # ()
+[//]: # (cd build)
+[//]: # (make -j 8)
+[//]: # (```)
 
 ## Unit Tests
 The tests are in written in the `tests` directory.

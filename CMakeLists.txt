@@ -6,12 +6,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(bdd_engine)
 
 # Include Conan-generated files
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_seilMODULE_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
 # Packages
 find_package(absl)
-find_package(Catch2 REQUIRED)
+find_package(Catch2)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
