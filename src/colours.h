@@ -4,7 +4,8 @@
 #include "config.h"
 
 enum class Colour : std::uint8_t { RED, GREEN, PURPLE, DEFAULT };
-inline void set_colour(std::ostream& os, Colour colour = Colour::DEFAULT) {
+inline void set_colour(std::ostream& os,
+                       const Colour colour = Colour::DEFAULT) {
     if constexpr (use_colours) {
         switch (colour) {
             case Colour::RED:
@@ -23,7 +24,8 @@ inline void set_colour(std::ostream& os, Colour colour = Colour::DEFAULT) {
     }
 }
 
-inline void output_with_colour(std::ostream& os, Colour colour, std::string_view message) {
+inline void output_with_colour(std::ostream& os, const Colour colour,
+                               const std::string_view message) {
     set_colour(os, colour);
     os << message;
     set_colour(os);

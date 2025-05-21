@@ -7,7 +7,7 @@
 
 // Parses a vector of tokens into an AST
 parse_result_t parse(const std::vector<Token>& tokens) {
-    // Tokenize the input string
+    // Tokenise the input string
     auto sp = std::span(tokens);
     std::vector<stmt> statements;
     std::vector<ParserException> errors;
@@ -36,7 +36,7 @@ parse_result_t parse(const std::vector<Token>& tokens) {
 }
 // Combines the lexer and the parser
 parse_result_t parse(const std::string& input) {
-    // Tokenize the input string
+    // Tokenise the input string
     const auto tokens = scan_to_tokens(input);
     return parse(tokens);
 }
@@ -165,7 +165,7 @@ std::unique_ptr<expr> parse_expr(const_span& sp) {
 std::unique_ptr<expr> parse_disjunct(const_span& sp) {
     auto conjunct{parse_conjunct(sp)};
     while (sp.front().type == Token::Type::LOR) {
-        auto op = sp.front();
+        const auto op = sp.front();
         sp = sp.subspan(1);  // Skip the '|' token
         auto right = parse_conjunct(sp);
         conjunct = std::make_unique<expr>(
@@ -178,7 +178,7 @@ std::unique_ptr<expr> parse_disjunct(const_span& sp) {
 std::unique_ptr<expr> parse_conjunct(const_span& sp) {
     auto unary_expr{parse_quantifier(sp)};
     while (sp.front().type == Token::Type::LAND) {
-        auto op = sp.front();
+        const auto op = sp.front();
         sp = sp.subspan(1);  // Skip the '&' token
         auto right = parse_quantifier(sp);
         unary_expr = std::make_unique<expr>(
@@ -194,7 +194,7 @@ std::unique_ptr<expr> parse_quantifier(const_span& sp) {
 
     if (sp.front().type == Token::Type::EXISTS ||
         sp.front().type == Token::Type::FORALL) {
-        auto quantifier = sp.front();
+        const auto quantifier = sp.front();
         sp = sp.subspan(1);  // Skip the quantifier token
         std::vector<Token> bound_vars;
 
@@ -235,7 +235,7 @@ std::unique_ptr<expr> parse_quantifier(const_span& sp) {
 // Parse a Unary Expression
 std::unique_ptr<expr> parse_unary(const_span& sp) {
     if (sp.front().type == Token::Type::BANG) {
-        auto op = sp.front();
+        const auto op = sp.front();
         sp = sp.subspan(1);  // Skip the '!' token
         auto operand = parse_unary(sp);
         return std::make_unique<expr>(unary_expr{std::move(operand), op});
@@ -246,11 +246,11 @@ std::unique_ptr<expr> parse_unary(const_span& sp) {
 // Parse a Primary Expression
 std::unique_ptr<expr> parse_primary(const_span& sp) {
     if (sp.front().type == Token::Type::IDENTIFIER) {
-        auto id = parse_ident(sp);
+        const auto id = parse_ident(sp);
         return std::make_unique<expr>(*id);
     } else if (sp.front().type == Token::Type::TRUE ||
                sp.front().type == Token::Type::FALSE) {
-        auto lit = parse_literal(sp);
+        const auto lit = parse_literal(sp);
         return std::make_unique<expr>(*lit);
     } else if (sp.front().type == Token::Type::LEFT_PAREN) {
         sp = sp.subspan(1);  // Skip the '(' token

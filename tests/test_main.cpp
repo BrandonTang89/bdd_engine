@@ -15,6 +15,6 @@ int main(const int argc, char* argv[]) {
         std::cout.setstate(std::ios_base::failbit);  // Hide stdout
     }
 
-    int result = Catch::Session().run(argc, argv);
+    const int result = Catch::Session().run(argc, argv);
     return result;
 }

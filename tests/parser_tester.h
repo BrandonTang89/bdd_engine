@@ -2,7 +2,6 @@
 #include <sstream>
 #include "../src/parser.h"
 class ParserTester {
-   private:
     std::ostringstream parser_error_stream{};
 
    public:
@@ -16,8 +15,8 @@ class ParserTester {
                 parser_error_stream << error.what() << '\n';
             }
             return {};
-        } else
-            return std::move(*estmts);
+        }
+        return std::move(*estmts);
     }
 
     // Get the parser error output

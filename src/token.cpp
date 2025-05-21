@@ -22,9 +22,7 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
     size_t i = 0;
 
     while (i < source.size()) {
-        char c = source[i];
-
-        switch (c) {
+        switch (char c = source[i]) {
             case '(':
                 tokens.emplace_back(Token::Type::LEFT_PAREN, "(");
                 break;
@@ -75,7 +73,7 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
                         identifier += c;
                         c = source[++i];
                     }
-                    if (keyword_map.find(identifier) != keyword_map.end()) {
+                    if (keyword_map.contains(identifier)) {
                         tokens.emplace_back(keyword_map.at(identifier), identifier);
                     } else {
                         tokens.emplace_back(Token::Type::IDENTIFIER, identifier);

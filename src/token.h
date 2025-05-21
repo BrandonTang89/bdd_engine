@@ -45,7 +45,7 @@ struct Token {
     Type type;
     std::string lexeme;  // the text of the token
 
-    Token(Type type, const std::string& lexeme) : type(type), lexeme(lexeme) {}
+    Token(const Type type, const std::string& lexeme) : type(type), lexeme(lexeme) {}
 
     std::string repr() const {
         return "Token(" + std::to_string(static_cast<int>(type)) + ", " + lexeme + ")";

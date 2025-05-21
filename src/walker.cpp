@@ -12,8 +12,8 @@
 
 Walker::Walker() : counter(2) {
     // Initialise the Walker
-    Bdd_Node false_node{Bdd_Node::Bdd_type::FALSE, "false", 0, 0};
-    Bdd_Node true_node{Bdd_Node::Bdd_type::TRUE, "true", 1, 1};
+    const Bdd_Node false_node{Bdd_Node::Bdd_type::FALSE, "false", 0, 0};
+    const Bdd_Node true_node{Bdd_Node::Bdd_type::TRUE, "true", 1, 1};
     node_to_id[false_node] = 0;
     node_to_id[true_node] = 1;
     id_to_iter[0] = node_to_id.find(false_node);
@@ -60,8 +60,8 @@ void Walker::walk_single(const stmt& statement) {
 void Walker::walk_raw(const stmt& statement) {
     // Walk the AST and evaluate the statement
     std::visit(
-        [this](const auto& stmt) {
-            using T = std::decay_t<decltype(stmt)>;
+        [this]<typename T0>(const T0& stmt) {
+            using T = std::decay_t<T0>;
             if constexpr (std::is_same_v<T, expr_stmt>) {
                 // Handle expression statement
                 LOG(INFO) << "Executing Expression Statement...";
@@ -108,13 +108,15 @@ void Walker::walk_decl_stmt(const decl_stmt& statement) {
 void Walker::walk_assign_stmt(const assign_stmt& statement) {
     // Handle assignment statement
     if (globals.contains(statement.target->name.lexeme) &&
-        !std::holds_alternative<Bdd_ptype>(globals[statement.target->name.lexeme])) {
-        out << "Variable name conflict (assigning to symbolic variable), ignoring assignment of: "
+        !std::holds_alternative<Bdd_ptype>(
+            globals[statement.target->name.lexeme])) {
+        out << "Variable name conflict (assigning to symbolic variable), "
+               "ignoring assignment of: "
             << statement.target->name.lexeme << '\n';
         return;
     }
 
-    id_type bdd_id = construct_bdd(*statement.value);
+    const id_type bdd_id = construct_bdd(*statement.value);
     globals[statement.target->name.lexeme] = Bdd_ptype{statement.target->name.lexeme, bdd_id};
     out << "Assigned to " << statement.target->name.lexeme << " with BDD ID: " << bdd_id << '\n';
 }

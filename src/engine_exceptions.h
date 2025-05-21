@@ -15,7 +15,8 @@ class ParserException final : public std::exception {
     mutable std::string formatted_message;
 
    public:
-    ParserException(const std::string& msg, const Token& nxt_token, std::string_view fn_name,
+    ParserException(const std::string& msg, const Token& nxt_token,
+        const std::string_view fn_name,
                     const std::source_location& loc = std::source_location::current())
         : message(msg), next_token(nxt_token), function_name(fn_name), location(loc) {}
 
@@ -28,7 +29,7 @@ class ParserException final : public std::exception {
 };
 
 // Execution Exception Type
-class ExecutionException : public std::exception {
+class ExecutionException final : public std::exception {
     std::string message;
     std::string function_name;
     std::source_location location;
@@ -36,7 +37,7 @@ class ExecutionException : public std::exception {
     mutable std::string formatted_message;
 
    public:
-    ExecutionException(const std::string& msg, std::string_view fn_name,
+    ExecutionException(const std::string& msg, const std::string_view fn_name,
                        const std::source_location& loc = std::source_location::current())
         : message(msg), function_name(fn_name), location(loc) {}
 

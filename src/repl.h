@@ -7,4 +7,4 @@
 void evaluate(const std::string& user_input, Walker& walker);
 
 // REPL function
-void repl(Walker& walker);
+[[noreturn]] void repl(Walker& walker);

@@ -53,10 +53,9 @@ using id_iter_map = std::unordered_map<id_type, iter_type>;  // human_ids -> ite
 class Walker {
     // An instance of the tree-walk interpreter
     // Manages the environment of the interpreter and available BDDs in the memory
-    // Side-effect free, output is written to the this->out stream
+    // Side-effect-free, output is written to this->out stream
     friend class InterpTester;
 
-   private:
     std::ostringstream out;  // printable output
     id_type counter{};       // monotonically increasing human indices
     id_iter_map id_to_iter;

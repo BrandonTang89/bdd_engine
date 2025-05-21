@@ -1,3 +1,4 @@
+#pragma once
 #include "../src/parser.h"
 #include "../src/walker.h"
 class InterpTester {
@@ -14,7 +15,7 @@ class InterpTester {
     }
 
     id_type interpret_expr(std::string input) {
-        input.push_back(';');  // must have some end of line character
+        input.push_back(';');  // must have some end-of-line character
         const auto tokens = scan_to_tokens(input);
         const_span sp(tokens);
         const auto ptr_expr = parse_expr(sp);

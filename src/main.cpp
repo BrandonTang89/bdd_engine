@@ -16,7 +16,7 @@ ABSL_FLAG(std::optional<std::string>, source, std::nullopt, "Input script to exe
 
 int main(const int argc, char* argv[]) {
 #ifndef NDEBUG
-    std::cout << ("Debug configuration!\n");
+    std::cout << "Debug configuration!\n";
 #endif
     // Set Up
     absl::SetProgramUsageMessage("Usage: " + std::string(*argv) +
@@ -27,10 +27,10 @@ int main(const int argc, char* argv[]) {
 
     // Start of Program
     Walker walker;
-    std::optional<std::string> source = absl::GetFlag(FLAGS_source);
-    if (source.has_value()) {
+    if (const std::optional<std::string> source = absl::GetFlag(FLAGS_source);
+        source.has_value()) {
         const std::string& input = source.value();
-        std::string user_input = "source " + input + ";";
+        const std::string user_input = "source " + input + ";";
         evaluate(user_input, walker);
         std::cout << walker.get_output();
     } else {
