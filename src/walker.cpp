@@ -11,7 +11,7 @@
 #include "parser.h"
 
 Walker::Walker() : counter(2) {
-    // Initialize the Walker
+    // Initialise the Walker
     Bdd_Node false_node{Bdd_Node::Bdd_type::FALSE, "false", 0, 0};
     Bdd_Node true_node{Bdd_Node::Bdd_type::TRUE, "true", 1, 1};
     node_to_id[false_node] = 0;
@@ -87,7 +87,7 @@ void Walker::walk_raw(const stmt& statement) {
 void Walker::walk_decl_stmt(const decl_stmt& statement) {
     // Handle declaration statement
     for (const auto& identifier : statement.identifiers) {
-        if (globals.find(identifier.lexeme) == globals.end()) {
+        if (!globals.contains(identifier.lexeme)) {
             auto new_var = Bvar_ptype{identifier.lexeme};
             globals[identifier.lexeme] = new_var;
             bdd_ordering_map[identifier.lexeme] = bdd_ordering.size();
@@ -107,7 +107,7 @@ void Walker::walk_decl_stmt(const decl_stmt& statement) {
 
 void Walker::walk_assign_stmt(const assign_stmt& statement) {
     // Handle assignment statement
-    if (globals.find(statement.target->name.lexeme) != globals.end() &&
+    if (globals.contains(statement.target->name.lexeme) &&
         !std::holds_alternative<Bdd_ptype>(globals[statement.target->name.lexeme])) {
         out << "Variable name conflict (assigning to symbolic variable), ignoring assignment of: "
             << statement.target->name.lexeme << '\n';
@@ -145,10 +145,9 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
             if (statement.arguments.size() != 1) {
                 throw ExecutionException("Invalid number of arguments for is_sat", __func__);
             }
-            id_type bdd_id = construct_bdd(*statement.arguments[0]);
-            bool sat = is_sat(bdd_id);
 
-            if (sat) {
+            if (id_type bdd_id = construct_bdd(*statement.arguments[0]);
+                is_sat(bdd_id)) {
                 out << "satisfiable" << '\n';
             } else {
                 out << "unsatisfiable" << '\n';
@@ -212,6 +211,6 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
 
 void Walker::walk_expr_stmt(const expr_stmt& statement) {
     // Handle expression statement
-    id_type bdd_id = construct_bdd(*statement.expression);
+    const id_type bdd_id = construct_bdd(*statement.expression);
     out << "BDD ID: " << bdd_id << '\n';
 }

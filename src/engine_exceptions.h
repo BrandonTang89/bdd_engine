@@ -6,7 +6,7 @@
 #include "token.h"
 
 // Parser Exception Type
-class ParserException : public std::exception {
+class ParserException final : public std::exception {
     std::string message;
     Token next_token;
     std::string function_name;

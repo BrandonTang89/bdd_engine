@@ -13,13 +13,12 @@ C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wiki
 - Implement bank + garbage sweeping
 
 *Language Features*
-- Implement syntactic sugar for implies, iff, xor, etc.
+- Implement syntactic sugar for iff, xor, etc.
 - Implement evaluation for BDDs under assignments
-
 
 # Language
 ## Grammar
-The language ignores white space. Each statement is terminated by a semicolon.
+The language ignores white space. A semicolon terminates each statement.
 
 All variables are either BDD variables or symbolic variables used in BDD construction.
 ```
@@ -39,9 +38,12 @@ function_name
     | "source"
 
 expression:
-    | conjuct ("|" conjuct)*
+    | (disjunct "->")* disjunct 
+   
+ disjunct:
+    | conjunct ("|" conjunct)*
 
-conjuct:
+conjunct:
     | quantifier ("&" quantifier)*
 
 quantifier:
@@ -62,6 +64,10 @@ primary:
     | "false"
 ```
 
+Most binary operations are left-associative.
+
+Particularly note that `->` is right associative.
+
 ## Semantics
 ### Exceptions
 When you give input, either via the REPL or using `source`, each statement of the input is parsed into an AST. If any statement is invalid, none of the statements are executed. The parser will return a list of parser exceptions which will be printed to the console.
@@ -76,10 +82,10 @@ bvar x y;
 ```
 This will create two symbolic variables `x` and `y`.
 
-The order in which sybolic variables are declared is important as this is their order within the BDDs.
+The order in which symbolic variables are declared is important as this is their order within the BDDs.
 
 ### Expressions
-All expressions are evaluated to form BDDs. An epression is either a conjunction, disjunction or negation of other expressions, or a primary expression. A primary expression is either a symbolic variable (declared with `bvar`), a boolean constant (`true` or `false`), a parenthesized expression or a BDD variable.
+All expressions are evaluated to form BDDs. An expression is either a conjunction, disjunction or negation of other expressions, or a primary expression. A primary expression is either a symbolic variable (declared with `bvar`), a boolean constant (`true` or `false`), a parenthesised expression or a BDD variable.
 
 ### Assignments
 We can assign BDDs to any non-symbolic variables using the `set` keyword.
@@ -190,14 +196,21 @@ We can also pass a script file to the binary. The script file should be a valid 
 ```
 
 # Architecture
-All BDDs are stored together as a big implicit directed acyclic graph. Each BDD node is uniquely identified by an integer id. This helps to save memory space and makes comparision of BDDs easier. Specifically, two formulae are logically equivalent iff they have the same BDD id.
+All BDDs are stored together as a big implicit directed acyclic graph. Each BDD node is uniquely identified by an integer id. This helps to save memory space and makes comparison of BDDs easier. Specifically, two formulae are logically equivalent iff they have the same BDD id.
 
-The true and false leaves are represented by the ids 1 and 0 respectively.
+The true and false leaves are represented by ids 1 and 0 respectively.
 
 Each required BDD is recursively constructed, ensuring that the reductions are done correctly during construction such that each reduced BDD has a unique ID within the graph.
 
+## Operations
+These operations are provided to manipulate the BDDs:
+- OR, AND, NOT, Exists and Forall quantification
+
+These operations are syntactic sugar on the above operations:
+- Implication: `P -> Q` is equivalent to `!P | Q`
+
 # Repository Layout
-The project is a tree-walk interpreter so it has 3 internal parts:
+The project is a tree-walk interpreter, so it has three internal parts:
 - A lexer
     - `token.h` contains the token types and scanner interface
 - A recursive descent parser

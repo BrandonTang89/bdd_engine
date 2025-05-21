@@ -15,7 +15,7 @@ const std::unordered_map<std::string, Token::Type> keyword_map = {
     {"forall", Token::Type::FORALL},
 };
 
-constexpr bool is_lexeme_char(char c) { return isalpha(c) || isdigit(c) || c == '_' || c == '.'; }
+constexpr bool is_lexeme_char(const char c) { return isalpha(c) || isdigit(c) || c == '_' || c == '.'; }
 
 std::vector<Token> scan_to_tokens(const std::string& source) {
     std::vector<Token> tokens;
@@ -57,6 +57,15 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
                     ++i;  // Skip the next '='
                 } else {
                     tokens.emplace_back(Token::Type::BANG, "!");
+                }
+                break;
+            case '-':
+                if (i + 1 < source.size() && source[i + 1] == '>') {
+                    tokens.emplace_back(Token::Type::ARROW, "->");
+                    ++i;  // Skip the next '>'
+
+                } else {
+                    tokens.emplace_back(Token::Type::MINUS, "-");
                 }
                 break;
             default:

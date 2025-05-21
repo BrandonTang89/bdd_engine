@@ -10,7 +10,7 @@
 #include "token.h"
 
 void evaluate(const std::string& user_input, Walker& walker) {
-    std::vector<Token> stream = scan_to_tokens(user_input);
+    const std::vector<Token> stream = scan_to_tokens(user_input);
 
     if constexpr (echo_input) {
         LOG(WARNING) << "Input: " << user_input << '\n';
@@ -39,7 +39,7 @@ void evaluate(const std::string& user_input, Walker& walker) {
     std::cout << walker.get_output();
 }
 
-void repl(Walker& walker) {
+[[noreturn]] void repl(Walker& walker) {
     std::cout << "Binary Decision Diagram Engine" << '\n';
 
     while (true) {

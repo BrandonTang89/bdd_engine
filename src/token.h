@@ -19,6 +19,8 @@ struct Token {
         EQUAL_EQUAL,
         BANG,
         BANG_EQUAL,
+        ARROW,
+        MINUS, // currently unused
 
         // Multiple character tokens
         IDENTIFIER,

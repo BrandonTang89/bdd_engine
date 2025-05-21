@@ -51,11 +51,11 @@ std::unordered_set<id_type> Walker::get_bdd_nodes(id_type id) {
 
         const Bdd_Node& node = id_to_iter[current]->first;
         if (node.type == Bdd_Node::Bdd_type::INTERNAL) {
-            if (visited.find(node.high) == visited.end()) {
+            if (!visited.contains(node.high)) {
                 q.push(node.high);
                 visited.insert(node.high);
             }
-            if (visited.find(node.low) == visited.end()) {
+            if (!visited.contains(node.low)) {
                 q.push(node.low);
                 visited.insert(node.low);
             }

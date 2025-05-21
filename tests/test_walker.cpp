@@ -10,39 +10,69 @@ TEST_CASE("Assignments and Usage") {
 
     SECTION("Simple Assignments") {
         interp.feed("set a = x & y;");
-        REQUIRE(interp.expr_tree_repr("a") == "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
 
         interp.feed("set b = x | z;");
-        REQUIRE(interp.expr_tree_repr("b,") == "x ? (TRUE) : (z ? (TRUE) : (FALSE))");
+        REQUIRE(interp.expr_tree_repr("b,") ==
+                "x ? (TRUE) : (z ? (TRUE) : (FALSE))");
     }
 
     SECTION("Reusing Assigned Variables") {
         interp.feed("set a = x & y;");
         interp.feed("set b = a | z;");
         REQUIRE(interp.expr_tree_repr("b") ==
-                "x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))");
+                "x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : "
+                "(FALSE))");
 
         interp.feed("set c = !a & z;");
         REQUIRE(interp.expr_tree_repr("c") ==
-                "x ? (y ? (FALSE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))");
+                "x ? (y ? (FALSE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : "
+                "(FALSE))");
     }
 
     SECTION("Overwriting Variables") {
         interp.feed("set a = x & y;");
-        REQUIRE(interp.expr_tree_repr("a") == "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
 
         interp.feed("set a = x | z;");
-        REQUIRE(interp.expr_tree_repr("a") == "x ? (TRUE) : (z ? (TRUE) : (FALSE))");
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (TRUE) : (z ? (TRUE) : (FALSE))");
     }
 
     SECTION("Complex Assignments") {
         interp.feed("set a = x & y | z;");
         REQUIRE(interp.expr_tree_repr("a") ==
-                "x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : (FALSE))");
+                "x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : "
+                "(FALSE))");
 
         interp.feed("set b = !a & x | y;");
         REQUIRE(interp.expr_tree_repr("b") ==
-                "x ? (y ? (TRUE) : (z ? (FALSE) : (TRUE))) : (y ? (TRUE) : (FALSE))");
+                "x ? (y ? (TRUE) : (z ? (FALSE) : (TRUE))) : (y ? (TRUE) : "
+                "(FALSE))");
+    }
+
+    SECTION("Assignments with Implies") {
+        interp.feed("set a = x -> y;");
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (TRUE)");
+
+        interp.feed("set b = !(x -> y);");
+        REQUIRE(interp.expr_tree_repr("b") ==
+                "x ? (y ? (FALSE) : (TRUE)) : (FALSE)");
+
+        interp.feed("set c = (x & y) -> z;");
+        REQUIRE(interp.expr_tree_repr("c") ==
+                "x ? (y ? (z ? (TRUE) : (FALSE)) : (TRUE)) : (TRUE)");
+
+        interp.feed("set d = x -> (y -> z);");
+        REQUIRE(interp.expr_tree_repr("d") ==
+                "x ? (y ? (z ? (TRUE) : (FALSE)) : (TRUE)) : (TRUE)");
+
+        interp.feed("set e = x -> y -> z;");
+        REQUIRE(interp.expr_tree_repr("e") ==
+                "x ? (y ? (z ? (TRUE) : (FALSE)) : (TRUE)) : (TRUE)");
     }
 }
 
@@ -59,24 +89,30 @@ TEST_CASE("Constructing Expression with Quantifiers") {
         REQUIRE(interp.expr_tree_repr("forall (x) x") == "FALSE");
         REQUIRE(interp.expr_tree_repr("exists (x) x") == "TRUE");
         REQUIRE(interp.expr_tree_repr("forall (x) (x & y)") == "FALSE");
-        REQUIRE(interp.expr_tree_repr("exists (x) (x & y)") == "y ? (TRUE) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("exists (x) (x & y)") ==
+                "y ? (TRUE) : (FALSE)");
     }
 
     SECTION("Single Bound Variable Semantic Sugar") {
-        REQUIRE(interp.expr_tree_repr("forall x x | x") == "x ? (TRUE) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("forall x x | x") ==
+                "x ? (TRUE) : (FALSE)");
         REQUIRE(interp.expr_tree_repr("forall x (x | x)") == "FALSE");
-        REQUIRE(interp.expr_tree_repr("exists x (x & y)") == "y ? (TRUE) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("exists x (x & y)") ==
+                "y ? (TRUE) : (FALSE)");
     }
 
     SECTION("Multiple Bound Variables") {
         REQUIRE(interp.expr_tree_repr("forall (x y) (x | y)") == "FALSE");
         REQUIRE(interp.expr_tree_repr("exists (x y) (x & y)") == "TRUE");
-        REQUIRE(interp.expr_tree_repr("forall (y x w) z") == "z ? (TRUE) : (FALSE)");
-        REQUIRE(interp.expr_tree_repr("exists (x y) (x & y & !z);") == "z ? (FALSE) : (TRUE)");
+        REQUIRE(interp.expr_tree_repr("forall (y x w) z") ==
+                "z ? (TRUE) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("exists (x y) (x & y & !z);") ==
+                "z ? (FALSE) : (TRUE)");
     }
 
     SECTION("Showing Precedence") {
-        REQUIRE(interp.expr_tree_repr("forall (x) x | forall (y) y") == "FALSE");
+        REQUIRE(interp.expr_tree_repr("forall (x) x | forall (y) y") ==
+                "FALSE");
         REQUIRE(interp.expr_tree_repr("exists (x) x & exists (y) y") == "TRUE");
     }
 }
@@ -181,7 +217,8 @@ TEST_CASE("Multiple Errors") {
         REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
 
         interp.feed("bvar x;");
-        REQUIRE(absl::StrContains(interp.get_output(), "Declared Symbolic Variable"));
+        REQUIRE(absl::StrContains(interp.get_output(),
+                                  "Declared Symbolic Variable"));
     }
 }
 
@@ -202,7 +239,8 @@ TEST_CASE("Source Function") {
 
         interp.feed("source test_source_code.txt;");
 
-        REQUIRE(interp.expr_tree_repr("a") == "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
 
         std::remove("test_source_code.txt");
     }

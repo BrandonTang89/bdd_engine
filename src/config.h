@@ -6,4 +6,4 @@ constexpr bool print_tokens = false;  // Set to true to print tokens
 constexpr bool print_ast = false;     // Set to true to print AST
 constexpr absl::LogSeverity warning_level = absl::LogSeverity::kWarning;
 
-constexpr bool use_colours = true;  // Set to true to enable colored parser errors
+constexpr bool use_colours = true;  // Set to true to enable coloured parser errors

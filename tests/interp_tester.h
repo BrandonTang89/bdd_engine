@@ -6,8 +6,7 @@ class InterpTester {
 
    public:
     void feed(const std::string& input) {
-        auto tokens = scan_to_tokens(input);
-
+        const auto tokens = scan_to_tokens(input);
         auto estmts = parse(tokens);
         assert(estmts.has_value());  // no parser error in interpreter tester
 
@@ -17,9 +16,9 @@ class InterpTester {
     id_type interpret_expr(std::string input) {
         input.push_back(';');  // must have some end of line character
         const auto tokens = scan_to_tokens(input);
-        auto it = tokens.begin();
-        auto ptr_expr = parse_expr(it);
-        auto bdd_id = walker.construct_bdd(*ptr_expr);
+        const_span sp(tokens);
+        const auto ptr_expr = parse_expr(sp);
+        const auto bdd_id = walker.construct_bdd(*ptr_expr);
         return bdd_id;
     }
 

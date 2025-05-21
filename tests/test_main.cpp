@@ -7,7 +7,7 @@
 
 constexpr bool hide_stdout = true;
 
-int main(int argc, char* argv[]) {
+int main(const int argc, char* argv[]) {
     absl::InitializeLog();
     absl::SetStderrThreshold(absl::LogSeverity::kWarning);
 

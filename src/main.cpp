@@ -14,7 +14,7 @@
 
 ABSL_FLAG(std::optional<std::string>, source, std::nullopt, "Input script to execute.");
 
-int main(int argc, char* argv[]) {
+int main(const int argc, char* argv[]) {
 #ifndef NDEBUG
     std::cout << ("Debug configuration!\n");
 #endif

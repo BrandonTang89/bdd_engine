@@ -1,5 +1,5 @@
+#pragma once
 #include <sstream>
-
 #include "../src/parser.h"
 class ParserTester {
    private:

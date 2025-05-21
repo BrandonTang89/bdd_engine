@@ -1,5 +1,4 @@
 #include <cassert>
-#include <cstddef>
 #include <ranges>
 #include <variant>
 
@@ -35,7 +34,7 @@ id_type Walker::construct_bdd(const expr& x) {
                 const Bdd_Node& body_bdd_node = id_to_iter[body_bdd]->first;
                 assert(body_bdd_node.type == Bdd_Node::Bdd_type::INTERNAL);
 
-                // Ensure that the bound variables at at least as high in bdd_ordering as the top
+                // Ensure that the bound variables at least as high in bdd_ordering as the top
                 // node of the body,
                 // Sort the bound variables in the order of their appearance in bdd_ordering
                 auto vw = expr.bound_vars |
@@ -87,7 +86,7 @@ id_type Walker::construct_bdd(const expr& x) {
                 }
             } else if constexpr (std::is_same_v<T, identifier>) {
                 // Handle identifier
-                if (globals.find(expr.name.lexeme) != globals.end()) {
+                if (globals.contains(expr.name.lexeme)) {
                     if (std::holds_alternative<Bvar_ptype>(globals[expr.name.lexeme])) {
                         // Handle BDD variable
                         const auto& bvar = std::get<Bvar_ptype>(globals[expr.name.lexeme]);
@@ -130,7 +129,7 @@ id_type Walker::rec_apply_quant(id_type a, std::span<std::string> bound_vars,
     if (bound_vars.empty()) return a;
     const Bdd_Node& node = id_to_iter[a]->first;
     const std::tuple<id_type, size_t> memo_key = {a, bound_vars.size()};
-    if (quantifier_memo.find(memo_key) != quantifier_memo.end()) {
+    if (quantifier_memo.contains(memo_key)) {
         return quantifier_memo[memo_key];
     }
 
