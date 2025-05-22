@@ -15,7 +15,9 @@ const std::unordered_map<std::string, Token::Type> keyword_map = {
     {"forall", Token::Type::FORALL},
 };
 
-constexpr bool is_lexeme_char(const char c) { return isalpha(c) || isdigit(c) || c == '_' || c == '.'; }
+constexpr bool is_lexeme_char(const char c) {
+    return isalpha(c) || isdigit(c) || c == '_' || c == '.';
+}
 
 std::vector<Token> scan_to_tokens(const std::string& source) {
     std::vector<Token> tokens;
@@ -43,7 +45,7 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
                 break;
             case '=':
                 if (i + 1 < source.size() && source[i + 1] == '=') {
-                    tokens.back() = Token(Token::Type::EQUAL_EQUAL, "==");
+                    tokens.emplace_back(Token::Type::EQUAL_EQUAL, "==");
                     ++i;  // Skip the next '='
                 } else {
                     tokens.emplace_back(Token::Type::EQUAL, "=");
@@ -74,12 +76,14 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
                         c = source[++i];
                     }
                     if (keyword_map.contains(identifier)) {
-                        tokens.emplace_back(keyword_map.at(identifier), identifier);
+                        tokens.emplace_back(keyword_map.at(identifier),
+                                            identifier);
                     } else {
-                        tokens.emplace_back(Token::Type::IDENTIFIER, identifier);
+                        tokens.emplace_back(Token::Type::IDENTIFIER,
+                                            identifier);
                     }
                 } else {
-                    ++i;  // Skip unrecognized characters
+                    ++i;  // Skip unrecognised characters
                 }
                 continue;  // Skip the increment at the end of the loop
         }

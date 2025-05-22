@@ -17,7 +17,7 @@ struct Token {
         // Single or Double Character Tokens
         EQUAL,
         EQUAL_EQUAL,
-        BANG,
+    BANG,
         BANG_EQUAL,
         ARROW,
         MINUS, // currently unused

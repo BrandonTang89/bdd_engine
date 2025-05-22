@@ -167,7 +167,7 @@ id_type Walker::rec_apply_and(id_type a, id_type b) {
     }
     if (node_a.type == Bdd_Node::Bdd_type::TRUE) return b;
     if (node_b.type == Bdd_Node::Bdd_type::TRUE) return a;
-    if (auto mit = binop_memo.find(std::make_tuple(a, b));
+    if (const auto mit = binop_memo.find(std::make_tuple(a, b));
         mit != binop_memo.end()) {
         return mit->second;
     }

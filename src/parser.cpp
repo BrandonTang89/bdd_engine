@@ -145,15 +145,76 @@ expr_stmt parse_expr_stmt(const_span& sp) {
     return expr;
 }
 
-// Parse an Expression Statement
+// Handle the equivalence (==) and XOR (!=) operations
+std::unique_ptr<expr> parse_expr(const_span& sp) {
+    auto left{parse_implication(sp)};
+
+    if (!sp.empty()) {
+        if (sp.front().type == Token::Type::EQUAL_EQUAL) {
+            // p == q is converted to (p & q) | (!p & !q)
+            const auto op = sp.front();
+            sp = sp.subspan(1);  // Skip the '==' token
+            auto right = parse_implication(sp);
+
+            // Create (p & q)
+            auto p_and_q = std::make_unique<expr>(
+                bin_expr{clone_expr(left), clone_expr(right),
+                         Token{Token::Type::LAND, "&"}});
+
+            // Create (!p & !q)
+            auto not_p = std::make_unique<expr>(
+                unary_expr{std::move(left), Token{Token::Type::BANG, "!"}});
+            auto not_q = std::make_unique<expr>(
+                unary_expr{std::move(right), Token{Token::Type::BANG, "!"}});
+            auto not_p_and_not_q = std::make_unique<expr>(
+                bin_expr{std::move(not_p), std::move(not_q),
+                         Token{Token::Type::LAND, "&"}});
+
+            // Create (p & q) | (!p & !q)
+            return std::make_unique<expr>(
+                bin_expr{std::move(p_and_q), std::move(not_p_and_not_q),
+                         Token{Token::Type::LOR, "|"}});
+        }
+
+        else if (sp.front().type == Token::Type::BANG_EQUAL) {
+            // p != q -> (p & !q) | (!p & q)
+            const auto op = sp.front();
+            sp = sp.subspan(1);  // Skip the '!=' token
+            auto right = parse_implication(sp);
+
+            auto not_p = std::make_unique<expr>(
+                unary_expr{clone_expr(left), Token{Token::Type::BANG, "!"}});
+            auto not_q = std::make_unique<expr>(
+                unary_expr{clone_expr(right), Token{Token::Type::BANG, "!"}});
+
+            // Create (p & !q)
+            auto p_and_not_q = std::make_unique<expr>(
+                bin_expr{std::move(left), std::move(not_q),
+                         Token{Token::Type::LAND, "&"}});
+            // Create (!p & q)
+            auto not_p_and_q = std::make_unique<expr>(
+                bin_expr{std::move(not_p), std::move(right),
+                         Token{Token::Type::LAND, "&"}});
+
+            // Create (p & !q) | (!p & q)
+            return std::make_unique<expr>(
+                bin_expr{std::move(p_and_not_q), std::move(not_p_and_q),
+                         Token{Token::Type::LOR, "|"}});
+        }
+    }
+
+    return left;
+}
+
+// Parse an implication
 // Looks for implications with right-associativity
 // syntactic sugar for '(not p) | q'
-std::unique_ptr<expr> parse_expr(const_span& sp) {
+std::unique_ptr<expr> parse_implication(const_span& sp) {
     auto premise{parse_disjunct(sp)};
     if (!sp.empty() && sp.front().type == Token::Type::ARROW) {
         const auto op = sp.front();
         sp = sp.subspan(1);  // Skip the '->' token
-        auto conclusion = parse_expr(sp);
+        auto conclusion = parse_implication(sp);
         return std::make_unique<expr>(
             bin_expr{std::make_unique<expr>(unary_expr{
                          std::move(premise), Token{Token::Type::BANG, "!"}}),

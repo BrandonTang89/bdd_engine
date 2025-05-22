@@ -74,6 +74,34 @@ TEST_CASE("Assignments and Usage") {
         REQUIRE(interp.expr_tree_repr("e") ==
                 "x ? (y ? (z ? (TRUE) : (FALSE)) : (TRUE)) : (TRUE)");
     }
+
+    SECTION("Assignment with Equality") {
+        interp.feed("set a = (x == y);");
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (y ? (FALSE) : (TRUE))");
+
+        interp.feed("set b = (x -> y) == (x -> y);");
+        REQUIRE(interp.expr_tree_repr("b") == "TRUE");
+
+        interp.feed("set f = (x -> y) == (y -> z);");
+        REQUIRE(interp.expr_tree_repr("f") ==
+                "x ? (y ? (z ? (TRUE) : (FALSE)) : (FALSE)) : (y ? (z ? "
+                "(TRUE) : (FALSE)) : (TRUE))");
+    }
+
+    SECTION("Assignment with Inequality") {
+        interp.feed("set a = (x != y);");
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (FALSE) : (TRUE)) : (y ? (TRUE) : (FALSE))");
+
+        interp.feed("set b = (x -> y) != (x -> y);");
+        REQUIRE(interp.expr_tree_repr("b") == "FALSE");
+
+        interp.feed("set f = (x -> y) != (y -> z);");
+        REQUIRE(interp.expr_tree_repr("f") ==
+                "x ? (y ? (z ? (FALSE) : (TRUE)) : (TRUE)) : (y ? (z ? "
+                "(FALSE) : (TRUE)) : (FALSE))");
+    }
 }
 
 TEST_CASE("Constructing Expression with Quantifiers") {
@@ -214,6 +242,15 @@ TEST_CASE("Multiple Errors") {
     SECTION("We should stop execution on the first error") {
         interp.feed("set a = a; bvar x;");
 
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+
+        interp.feed("bvar x;");
+        REQUIRE(absl::StrContains(interp.get_output(),
+                                  "Declared Symbolic Variable"));
+    }
+
+    SECTION("Error recovery works as expected") {
+        interp.feed("set a = invalid;");
         REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
 
         interp.feed("bvar x;");

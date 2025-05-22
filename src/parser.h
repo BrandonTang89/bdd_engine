@@ -34,6 +34,9 @@ expr_stmt parse_expr_stmt(const_span& sp);
 // Parses an Expression
 std::unique_ptr<expr> parse_expr(const_span& sp);
 
+// Parses an Implication Expression
+std::unique_ptr<expr> parse_implication(const_span& sp);
+
 // Parses a Disjunction Expression
 std::unique_ptr<expr> parse_disjunct(const_span& sp);
 
@@ -54,3 +57,4 @@ std::unique_ptr<identifier> parse_ident(const_span& sp);
 
 // Parses a Literal
 std::unique_ptr<literal> parse_literal(const_span& sp);
+

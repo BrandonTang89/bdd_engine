@@ -4,7 +4,7 @@
 
 bool Walker::is_sat(const id_type a) {
     // Check if the BDD is satisfiable
-    if (auto it = is_sat_memo.find(a); it != is_sat_memo.end()) {
+    if (const auto it = is_sat_memo.find(a); it != is_sat_memo.end()) {
         return it->second;
     }
     const Bdd_Node& node = id_to_iter[a]->first;

@@ -1,15 +1,40 @@
 #include "ast.h"
 
+std::unique_ptr<expr> clone_expr(const std::unique_ptr<expr>& expression) {
+    return std::visit(
+        []<typename T0>(const T0& e) -> std::unique_ptr<expr> {
+            using T = std::decay_t<T0>;
+            if constexpr (std::is_same_v<T, bin_expr>) {
+                return std::make_unique<expr>(
+                    bin_expr{clone_expr(e.left), clone_expr(e.right), e.op});
+            } else if constexpr (std::is_same_v<T, quantifier_expr>) {
+                return std::make_unique<expr>(quantifier_expr{
+                    e.quantifier, e.bound_vars, clone_expr(e.body)});
+            } else if constexpr (std::is_same_v<T, unary_expr>) {
+                return std::make_unique<expr>(
+                    unary_expr{clone_expr(e.operand), e.op});
+            } else if constexpr (std::is_same_v<T, literal>) {
+                return std::make_unique<expr>(literal{e.value});
+            } else if constexpr (std::is_same_v<T, identifier>) {
+                return std::make_unique<expr>(identifier{e.name});
+            } else {
+                return nullptr;
+            }
+        },
+        *expression);
+}
+
 std::string expr_repr(const expr& expression) {
     return std::visit(
         []<typename T0>(const T0& e) -> std::string {
             using T = std::decay_t<T0>;
             if constexpr (std::is_same_v<T, bin_expr>) {
-                return "BinExpr(" + expr_repr(*e.left) + ", " + e.op.lexeme + ", " +
-                       expr_repr(*e.right) + ")";
+                return "BinExpr(" + expr_repr(*e.left) + ", " + e.op.lexeme +
+                       ", " + expr_repr(*e.right) + ")";
 
             } else if constexpr (std::is_same_v<T, quantifier_expr>) {
-                std::string result = "QuantifierExpr(" + e.quantifier.lexeme + " (";
+                std::string result =
+                    "QuantifierExpr(" + e.quantifier.lexeme + " (";
                 for (const auto& id : e.bound_vars) {
                     result += id.lexeme + ", ";
                 }
@@ -19,7 +44,8 @@ std::string expr_repr(const expr& expression) {
                 result += expr_repr(*e.body) + ")";
                 return result;
             } else if constexpr (std::is_same_v<T, unary_expr>) {
-                return "UnaExpr(" + e.op.lexeme + ", " + expr_repr(*e.operand) + ")";
+                return "UnaExpr(" + e.op.lexeme + ", " + expr_repr(*e.operand) +
+                       ")";
             } else if constexpr (std::is_same_v<T, literal>) {
                 return "Literal(" + e.value.lexeme + ")";
             } else if constexpr (std::is_same_v<T, identifier>) {
@@ -38,7 +64,8 @@ std::string stmt_repr(const stmt& statement) {
             if constexpr (std::is_same_v<T, expr_stmt>) {
                 return "Expr_Stmt(" + expr_repr(*s.expression) + ")";
             } else if constexpr (std::is_same_v<T, func_call_stmt>) {
-                std::string result = "Func_Call_Stmt(" + s.func_name.lexeme + "(";
+                std::string result =
+                    "Func_Call_Stmt(" + s.func_name.lexeme + "(";
                 for (const auto& arg : s.arguments) {
                     result += expr_repr(*arg) + ", ";
                 }

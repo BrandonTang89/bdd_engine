@@ -45,6 +45,18 @@ TEST_CASE("Invalid Declaration") {
         REQUIRE(absl::StrContains(error, "ParserException"));
     }
 
+    SECTION("Multiple Equality") {
+        parser_tester.feed("set a = x == y == z;");
+        std::string error = parser_tester.get_parser_error();
+        REQUIRE(absl::StrContains(error, "ParserException"));
+    }
+
+    SECTION("Mixing Equality and Inequality") {
+        parser_tester.feed("set a = x == y != z;");
+        std::string error = parser_tester.get_parser_error();
+        REQUIRE(absl::StrContains(error, "ParserException"));
+    }
+
     SECTION("Multiple errors detected at once") {
         std::string input = R"(
             bvar x, y, z;
@@ -52,7 +64,8 @@ TEST_CASE("Invalid Declaration") {
         )";
         parser_tester.feed(input);
         std::string error = parser_tester.get_parser_error();
-        std::vector<std::string> error_lines = absl::StrSplit(error, '\n', absl::SkipEmpty());
+        std::vector<std::string> error_lines =
+            absl::StrSplit(error, '\n', absl::SkipEmpty());
 
         REQUIRE(error_lines.size() == 2);
         for (const auto& line : error_lines) {

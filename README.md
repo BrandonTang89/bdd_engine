@@ -2,25 +2,31 @@
 
 [![CMake Build and Test](https://github.com/BrandonTang89/bdd_engine/actions/workflows/cmakeBuildTest.yml/badge.svg)](https://github.com/BrandonTang89/bdd_engine/actions/workflows/cmakeBuildTest.yml)
 
-C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wikipedia.org/wiki/Binary_decision_diagram) for Propositional Formulae Manipulation.
+C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wikipedia.org/wiki/Binary_decision_diagram)
+for Propositional Formulae Manipulation.
 
 ## Todo
 
 *Generic Tasks*
+
 - Expand benchmarks
 
 *Meta Features*
+
 - Implement bank + garbage sweeping
 
 *Language Features*
-- Implement syntactic sugar for iff, xor, etc.
+
 - Implement evaluation for BDDs under assignments
 
 # Language
+
 ## Grammar
+
 The language ignores white space. A semicolon terminates each statement.
 
 All variables are either BDD variables or symbolic variables used in BDD construction.
+
 ```
 statements:
     | statement+
@@ -38,6 +44,11 @@ function_name
     | "source"
 
 expression:
+    | implication
+    | implication "==" implication
+    | implication "!=" implication
+   
+implication:
     | (disjunct "->")* disjunct 
    
  disjunct:
@@ -64,30 +75,41 @@ primary:
     | "false"
 ```
 
-Most binary operations are left-associative.
-
-Particularly note that `->` is right associative.
+- Most binary operations are left-associative.
+- Particularly note that `->` is right associative.
+- Equality and inequality are not associative, i.e. can't be used in chains.
 
 ## Semantics
-### Exceptions
-When you give input, either via the REPL or using `source`, each statement of the input is parsed into an AST. If any statement is invalid, none of the statements are executed. The parser will return a list of parser exceptions which will be printed to the console.
 
-During execution, if any statement is invalid, the execution will stop and the error will be printed to the console. The execution will not continue after the error.
+### Exceptions
+
+When you give input, either via the REPL or using `source`, each statement of the input is parsed into an AST. If any
+statement is invalid, none of the statements are executed. The parser will return a list of parser exceptions which will
+be printed to the console.
+
+During execution, if any statement is invalid, the execution will stop and the error will be printed to the console. The
+execution will not continue after the error.
 
 ### Symbolic Variable Declaration
-We declare symbolic variables using the `bvar` keyword. 
+
+We declare symbolic variables using the `bvar` keyword.
 
 ```
 bvar x y; 
 ```
+
 This will create two symbolic variables `x` and `y`.
 
 The order in which symbolic variables are declared is important as this is their order within the BDDs.
 
 ### Expressions
-All expressions are evaluated to form BDDs. An expression is either a conjunction, disjunction or negation of other expressions, or a primary expression. A primary expression is either a symbolic variable (declared with `bvar`), a boolean constant (`true` or `false`), a parenthesised expression or a BDD variable.
+
+All expressions are evaluated to form BDDs. An expression is either a conjunction, disjunction or negation of other
+expressions, or a primary expression. A primary expression is either a symbolic variable (declared with `bvar`), a
+boolean constant (`true` or `false`), a parenthesised expression or a BDD variable.
 
 ### Assignments
+
 We can assign BDDs to any non-symbolic variables using the `set` keyword.
 
 ```
@@ -97,6 +119,7 @@ set c = a & b;
 ```
 
 ### Expression Statements
+
 Writing just an expression will display the id of the BDD node that an expression corresponds to.
 
 ```
@@ -104,9 +127,11 @@ a;
 ```
 
 ### Built-in Functions
+
 We have a few built-in functions to query about the BDDs:
 
 #### Display the BDD in a tree format
+
 ```
 display_tree <expression>
 ```
@@ -114,23 +139,30 @@ display_tree <expression>
 Displays the expression as an ASCII tree.
 
 #### Display a graph representation of the BDD
+
 ```
 display_graph <expression>
 ```
 
-Prints a DOT language representation of the BDD that can be viewed with [Graphviz](https://graphviz.org/). An online viewer is available at [Graphviz Online](https://dreampuf. github.io/GraphvizOnline). 
+Prints a DOT language representation of the BDD that can be viewed with [Graphviz](https://graphviz.org/). An online
+viewer is available at [Graphviz Online](https://dreampuf. github.io/GraphvizOnline).
 
-In the graph, the nodes are labelled with the BDD variables they pivot on. The solid edges represent high branches and the dashed edges represent low branches. The leaves are labelled with `TRUE` or `FALSE`.
+In the graph, the nodes are labelled with the BDD variables they pivot on. The solid edges represent high branches and
+the dashed edges represent low branches. The leaves are labelled with `TRUE` or `FALSE`.
 
 #### Check satisfiability of the BDD
+
 ```
 is_sat <expression>
 ```
-Does a reachability check from the BDD node of the expression to the `TRUE` leaf node and prints that the expression is satisfiable or not.
+
+Does a reachability check from the BDD node of the expression to the `TRUE` leaf node and prints that the expression is
+satisfiable or not.
 
 This reachability check is done with breath-first search (BFS)
 
 #### Run a script file
+
 ```
 source <filename>
 ```
@@ -138,12 +170,14 @@ source <filename>
 Loads the entire file into memory, scans it, parses it and executes it. The file is expected to be a valid script.
 
 The filename should only consist of the following characters:
+
 - Digits
 - Lower and uppercase letters
 - Underscore (`_`)
-- Dot (`.`) 
+- Dot (`.`)
 
 ## Example Interaction
+
 ```
 Binary Decision Diagram Engine
 >> bvar x y z; 
@@ -179,8 +213,11 @@ y ? (FALSE) : (z ? (FALSE) : (TRUE))
 ```
 
 # Usage
+
 ## REPL Usage
-The default way to use the application is as a REPL. The REPL will read a line of input, parse it and execute it. The REPL will print the result of the execution.
+
+The default way to use the application is as a REPL. The REPL will read a line of input, parse it and execute it. The
+REPL will print the result of the execution.
 
 To be able to use up and down arrow keys to use previous commands, use `rlwrap` to run the binary.
 
@@ -189,34 +226,52 @@ rlwrap ./bdd_engine
 ```
 
 ## Script Usage
-We can also pass a script file to the binary. The script file should be a valid script. The script file will be loaded into memory, scanned, parsed and executed.
+
+We can also pass a script file to the binary. The script file should be a valid script. The script file will be loaded
+into memory, scanned, parsed and executed.
 
 ```bash
 ./bdd_engine --source <script_file.bdd>
 ```
 
 # Architecture
-All BDDs are stored together as a big implicit directed acyclic graph. Each BDD node is uniquely identified by an integer id. This helps to save memory space and makes comparison of BDDs easier. Specifically, two formulae are logically equivalent iff they have the same BDD id.
+
+All BDDs are stored together as a big implicit directed acyclic graph. Each BDD node is uniquely identified by an
+integer id. This helps to save memory space and makes comparison of BDDs easier. Specifically, two formulae are
+logically equivalent iff they have the same BDD id.
 
 The true and false leaves are represented by ids 1 and 0 respectively.
 
-Each required BDD is recursively constructed, ensuring that the reductions are done correctly during construction such that each reduced BDD has a unique ID within the graph.
+Each required BDD is recursively constructed, ensuring that the reductions are done correctly during construction such
+that each reduced BDD has a unique ID within the graph.
 
 ## Operations
+
 These operations are provided to manipulate the BDDs:
+
 - OR, AND, NOT, Exists and Forall quantification
 
 These operations are syntactic sugar on the above operations:
+
 - Implication: `P -> Q` is equivalent to `!P | Q`
+- Equivalence: `P == Q` is equivalent to `(P & Q) | (!P & !Q)`
+- Inequality: `P != Q` is equivalent to `(P & !Q) | (!P & Q)`
+
+Note that this means that using equivalence and inequality can result in exponential blowup in the size of the abstract
+syntax tree. However, when we evaluate the expression, we will still only have 1 BDD node for each P and Q so this
+should not really be a problem in practice.
 
 # Repository Layout
+
 The project is a tree-walk interpreter, so it has three internal parts:
+
 - A lexer
     - `token.h` contains the token types and scanner interface
 - A recursive descent parser
-    - `parser.h` contains the parser interface 
-      - The parser has a custom parser exception class for handling errors
-      - A call to the `parse` function returns an `expected` object that either has the parsed ASTs or a list of parse errors.
+    - `parser.h` contains the parser interface
+        - The parser has a custom parser exception class for handling errors
+        - A call to the `parse` function returns an `expected` object that either has the parsed ASTs or a list of parse
+          errors.
     - `ast.h` contains the abstract syntax tree (AST) node types
 - A tree-walk interpreter
     - `walker.h` contains the interface for the interpreter, including the run-time BDD graph
@@ -225,11 +280,13 @@ The project is a tree-walk interpreter, so it has three internal parts:
     - `walker_bdd_view.cpp` implements queries about the BDDs, such as satisfiability and display functions
 
 The REPL and overall application are implemented by the following
-- `main.cpp` contains the main function 
+
+- `main.cpp` contains the main function
 - `repl.h` contains the REPL interface
 - `repl.cpp` implements the REPL interface
 
 # Building and Dependencies
+
 Uses CMake 3.31 and Conan 2.15.0, tested on GCC 14.
 
 Depends on `Abseil` and `Catch2`.
@@ -240,15 +297,23 @@ The easiest way to configure and build is using the Conan extension in CLion.
 [//]: # (Set up the Conan profile by following instructions from [Conan]&#40;https://docs.conan.io/2/tutorial/consuming_packages/build_simple_cmake_project.html&#41;.)
 
 [//]: # ()
+
 [//]: # (```bash)
+
 [//]: # (conan install . --output-folder=build --build=missing)
+
 [//]: # (cmake --preset conan-release)
+
 [//]: # ()
+
 [//]: # (cd build)
+
 [//]: # (make -j 8)
+
 [//]: # (```)
 
 ## Unit Tests
+
 The tests are in written in the `tests` directory.
 
 After building the tests, we can run them using `make test` or (for more verbose output) `./tests`.
