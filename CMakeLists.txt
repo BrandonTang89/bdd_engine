@@ -8,7 +8,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release")
 endif ()
 
 project(bdd_engine)
-add_compile_options(-fsanitize=address,undefined -Wall -Wextra -Wpedantic -fdiagnostics-set-output=text:experimental-nesting=yes)
+add_compile_options(-fsanitize=address,undefined -Wall -Wextra -Wpedantic)
 add_link_options(-fsanitize=address,undefined)
 
 # Packages
