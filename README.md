@@ -10,15 +10,15 @@ for Propositional Formulae Manipulation.
 *Meta Features*
 
 - Implement garbage sweeping
-  - Clear operator memo tables
-  - Clear unreachable BDD nodes
+    - Clear operator memo tables
+    - Clear unreachable BDD nodes
 - Cross-compilation to WASM
 
 *Language Features*
 
 - BDD Substitutions
-  - I.e. replacing all occurrences of a variable with another BDD
-  - Can be used for both renaming and evaluating under an assignment
+    - I.e. replacing all occurrences of a variable with another BDD
+    - Can be used for both renaming and evaluating under an assignment
 
 # Language
 
@@ -81,7 +81,6 @@ primary:
 - Particularly note that `->` is right associative.
 - Equality and inequality are not associative, i.e. can't be used in chains.
 
-
 ## Semantics
 
 ### Exceptions
@@ -108,7 +107,8 @@ The order in which symbolic variables are declared is important as this is their
 ### Expressions
 
 All expressions are evaluated to form BDDs. An expression is either a conjunction, disjunction or negation of other
-expressions, or a primary expression. A primary expression is either 
+expressions, or a primary expression. A primary expression is either
+
 - a parenthesised expression
 - a symbolic variable (declared with `bvar`)
 - an identifier (declared with `set`)
@@ -152,9 +152,9 @@ display_graph <expression>
 ```
 
 Prints a DOT language representation of the BDD that can be viewed with [Graphviz](https://graphviz.org/). An online
-viewer is available at [Graphviz Online](https://dreampuf. github.io/GraphvizOnline).
+viewer is available at [Graphviz Online](https://dreampuf.github.io/GraphvizOnline).
 
-In the graph, the nodes are labelled with the BDD variables they pivot on. The solid edges represent high branches and
+In the graph, the nodes are labelled with the BDD variables they pivot on. The solid edges represent high branches, and
 the dashed edges represent low branches. The leaves are labelled with `TRUE` or `FALSE`.
 
 #### Check satisfiability of the BDD
@@ -219,8 +219,6 @@ BDD ID: 9
 y ? (FALSE) : (z ? (FALSE) : (TRUE))
 ```
 
-
-
 # Architecture
 
 All BDDs are stored together as a big implicit directed acyclic graph. Each BDD node is uniquely identified by an
@@ -255,8 +253,8 @@ The project is a tree-walk interpreter, so it has three internal parts:
 - A lexer
     - `token.h` contains the token types
     - `lexer.h/cpp` contains the lexer code
-      - Lexer has a custom exception class for handling errors
-      - Calls to `scan_to_tokens` returns either a list of tokens or a lexer error
+        - Lexer has a custom exception class for handling errors
+        - Calls to `scan_to_tokens` returns either a list of tokens or a lexer error
 - A recursive descent parser
     - `parser.h` contains the parser interface
         - The parser has a custom parser exception class for handling errors
@@ -281,7 +279,7 @@ Uses CMake 3.31 and Conan 2.15.0, tested on GCC 14.
 
 Depends on `Abseil` and `Catch2`.
 
-The easiest way to configure and build is using the Conan extension in CLion. 
+The easiest way to configure and build is using the Conan extension in CLion.
 
 Otherwise:
 
@@ -292,6 +290,20 @@ cmake .. -G Ninja -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCM
 cmake --build .
 ```
 
+[//]: # (```bash)
+
+[//]: # (mkdir cmake-build-release)
+
+[//]: # (cd cmake-build-release)
+
+[//]: # (CXX=emcmake cmake .. -DCMAKE_TOOLCHAIN_FILE=/opt/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release -DCONAN_HOST_PROFILE=emscripten -DCONAN_BUILD_PROFILE=default)
+
+[//]: # (#emcmake cmake --build .)
+
+[//]: # (make)
+
+[//]: # (```)
+
 ## Unit Tests
 
 The tests are in written in the `tests` directory.
@@ -300,7 +312,7 @@ After building the tests, we can run them using `./tests`.
 
 We can run benchmarks with `./tests "[!-benchmark]"` to get the benchmark results.
 
-##  Usage
+## Usage
 
 ### REPL Usage
 
