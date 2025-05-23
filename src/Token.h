@@ -43,18 +43,18 @@ struct Token {
 
     Type type;
     std::string lexeme;               // the text of the token
-    std::optional<uint32_t> value{};  // optional value for number tokens
+    std::optional<uint32_t> token_value{};  // optional value for number tokens
 
     Token(const Type type, const std::string& lexeme,
           const std::optional<int> value = std::nullopt)
-        : type(type), lexeme(lexeme), value(value) {
+        : type(type), lexeme(lexeme), token_value(value) {
         assert(type != Type::ID || value.has_value());
     }
 
     std::string repr() const {
         return "Token(" + std::to_string(static_cast<int>(type)) + ", " +
                lexeme +
-               (value.has_value() ? ", " + std::to_string(value.value()) : "") +
+               (token_value.has_value() ? ", " + std::to_string(token_value.value()) : "") +
                ")";
     }
 };

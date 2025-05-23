@@ -14,25 +14,25 @@ void Walker::clear_memos() {  // for later: Implement garbage collection
 id_type Walker::construct_bdd(const expr& x) {
     id_type ret_id{};
     std::visit(
-        [&ret_id, this]<typename T0>(const T0& expr) {
+        [&ret_id, this]<typename T0>(const T0& expression) {
             using T = std::decay_t<T0>;
             if constexpr (std::is_same_v<T, bin_expr>) {
-                const id_type left_bdd = construct_bdd(*expr.left);
-                const id_type right_bdd = construct_bdd(*expr.right);
+                const id_type left_bdd = construct_bdd(*expression.left);
+                const id_type right_bdd = construct_bdd(*expression.right);
                 id_type combined_bdd = 0;
 
-                if (expr.op.type == Token::Type::LAND) {
+                if (expression.op.type == Token::Type::LAND) {
                     combined_bdd = rec_apply_and(left_bdd, right_bdd);
-                } else if (expr.op.type == Token::Type::LOR) {
+                } else if (expression.op.type == Token::Type::LOR) {
                     combined_bdd = rec_apply_or(left_bdd, right_bdd);
                 } else {
                     throw std::runtime_error("Unsupported binary operator" +
-                                             expr.op.lexeme);
+                                             expression.op.lexeme);
                 }
                 return ret_id = combined_bdd;
             } else if constexpr (std::is_same_v<T, quantifier_expr>) {
                 // Handle quantifier expression
-                id_type body_bdd = construct_bdd(*expr.body);
+                id_type body_bdd = construct_bdd(*expression.body);
 
                 // Simple Cases
                 if (body_bdd == 0 || body_bdd == 1) {
@@ -45,9 +45,9 @@ id_type Walker::construct_bdd(const expr& x) {
                 // bdd_ordering as the top node of the body, Sort the bound
                 // variables in the order of their appearance in bdd_ordering
                 auto vw =
-                    expr.bound_vars | std::views::transform([](const auto& id) {
-                        return id.lexeme;
-                    }) |
+                    expression.bound_vars |
+                    std::views::transform(
+                        [](const auto& id) { return id.lexeme; }) |
                     std::views::filter([this, &body_bdd_node](const auto& id) {
                         return bdd_ordering_map[id] >=
                                bdd_ordering_map[body_bdd_node.var];
@@ -63,13 +63,13 @@ id_type Walker::construct_bdd(const expr& x) {
                 quantifier_memo.clear();
 
                 // Apply the quantifier
-                if (expr.quantifier.type == Token::Type::EXISTS) {
+                if (expression.quantifier.type == Token::Type::EXISTS) {
                     return ret_id = rec_apply_quant(
                                body_bdd, bound_var_names,
                                [this](const id_type a, const id_type b) {
                                    return rec_apply_or(a, b);
                                });
-                } else if (expr.quantifier.type == Token::Type::FORALL) {
+                } else if (expression.quantifier.type == Token::Type::FORALL) {
                     return ret_id = rec_apply_quant(
                                body_bdd, bound_var_names,
                                [this](const id_type a, const id_type b) {
@@ -81,8 +81,8 @@ id_type Walker::construct_bdd(const expr& x) {
                 }
             } else if constexpr (std::is_same_v<T, unary_expr>) {
                 // Handle unary expression
-                const id_type operand_bdd = construct_bdd(*expr.operand);
-                if (expr.op.type == Token::Type::BANG) {
+                const id_type operand_bdd = construct_bdd(*expression.operand);
+                if (expression.op.type == Token::Type::BANG) {
                     return ret_id = rec_apply_not(operand_bdd);
                 } else {
                     throw std::runtime_error("Unsupported unary operator");
@@ -90,41 +90,41 @@ id_type Walker::construct_bdd(const expr& x) {
 
             } else if constexpr (std::is_same_v<T, literal>) {
                 // Handle literal
-                if (expr.value.type == Token::Type::TRUE) {
+                if (expression.value.type == Token::Type::ID) {
+                    if (id_to_iter.contains(*expression.value.token_value)) {
+                        return ret_id = *expression.value.token_value;
+                    } else {
+                        throw ExecutionException(
+                            "ID not found: " + expression.value.lexeme,
+                            "Walker::construct_bdd");
+                    }
+                } else if (expression.value.type == Token::Type::TRUE) {
                     return ret_id = static_cast<id_type>(1);
-                } else if (expr.value.type == Token::Type::FALSE) {
+                } else if (expression.value.type == Token::Type::FALSE) {
                     return ret_id = static_cast<id_type>(0);
                 } else {
                     throw std::runtime_error("Unsupported literal type");
                 }
             } else if constexpr (std::is_same_v<T, identifier>) {
                 // Handle identifier
-                if (expr.name.type == Token::Type::ID) {
-                    if (id_to_iter.contains(*expr.name.value)) {
-                        return ret_id = *expr.name.value;
-                    } else {
-                        throw ExecutionException(
-                            "ID not found: " + expr.name.lexeme,
-                            "Walker::construct_bdd");
-                    }
-                } else if (globals.contains(expr.name.lexeme)) {
+                if (globals.contains(expression.name.lexeme)) {
                     if (std::holds_alternative<Bvar_ptype>(
-                            globals[expr.name.lexeme])) {
+                            globals[expression.name.lexeme])) {
                         // Handle BDD variable
-                        const auto& bvar =
-                            std::get<Bvar_ptype>(globals[expr.name.lexeme]);
+                        const auto& bvar = std::get<Bvar_ptype>(
+                            globals[expression.name.lexeme]);
                         const Bdd_Node bdd_node{Bdd_Node::Bdd_type::INTERNAL,
                                                 bvar.name, 1,
                                                 0};  // if x then high else low
                         return ret_id = get_id(bdd_node);
                     } else {
                         return ret_id = std::get<Bdd_ptype>(
-                                            globals[expr.name.lexeme])
+                                            globals[expression.name.lexeme])
                                             .id;
                     }
                 } else {
                     throw ExecutionException(
-                        "Variable not found: " + expr.name.lexeme,
+                        "Variable not found: " + expression.name.lexeme,
                         "Walker::construct_bdd");
                 }
             } else {

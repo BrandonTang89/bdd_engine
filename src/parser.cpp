@@ -284,11 +284,11 @@ std::shared_ptr<expr> parse_unary(const_span& sp) {
 
 // Parse a Primary Expression
 std::shared_ptr<expr> parse_primary(const_span& sp) {
-    if (sp.front().type == Token::Type::IDENTIFIER ||
-        sp.front().type == Token::Type::ID) {
+    if (sp.front().type == Token::Type::IDENTIFIER) {
         const auto id = parse_ident(sp);
         return std::make_shared<expr>(*id);
-    } else if (sp.front().type == Token::Type::TRUE ||
+    } else if (sp.front().type == Token::Type::ID ||
+               sp.front().type == Token::Type::TRUE ||
                sp.front().type == Token::Type::FALSE) {
         const auto lit = parse_literal(sp);
         return std::make_shared<expr>(*lit);
@@ -304,8 +304,7 @@ std::shared_ptr<expr> parse_primary(const_span& sp) {
 
 // Parse an Identifier
 std::shared_ptr<identifier> parse_ident(const_span& sp) {
-    if (sp.front().type != Token::Type::IDENTIFIER &&
-        sp.front().type != Token::Type::ID) {
+    if (sp.front().type != Token::Type::IDENTIFIER) {
         throw ParserException("Expected identifier", sp.front(), __func__);
     }
     auto id = std::make_shared<identifier>(sp.front());
@@ -316,7 +315,8 @@ std::shared_ptr<identifier> parse_ident(const_span& sp) {
 // Parse a Literal
 std::shared_ptr<literal> parse_literal(const_span& sp) {
     if (sp.front().type != Token::Type::TRUE &&
-        sp.front().type != Token::Type::FALSE) {
+        sp.front().type != Token::Type::FALSE &&
+        sp.front().type != Token::Type::ID) {
         throw ParserException("Expected literal", sp.front(), __func__);
     }
     auto lit = std::make_shared<literal>(sp.front());

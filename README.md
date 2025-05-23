@@ -16,10 +16,9 @@ for Propositional Formulae Manipulation.
 
 *Language Features*
 
-- Using integer IDs as built-in variables for BDDs
-- Variable renaming in BDDs (which can result in reordering)
-  - Run-time BDD expressed back as a canonical AST
-- Implement evaluation for BDDs under assignments
+- BDD Substitutions
+  - I.e. replacing all occurrences of a variable with another BDD
+  - Can be used for both renaming and evaluating under an assignment
 
 # Language
 
@@ -72,14 +71,16 @@ unary:
 
 primary:
     | IDENTIFIER
-    | "(" expression ")"
+    | ID
     | "true"
     | "false"
+    | "(" expression ")"
 ```
 
 - Most binary operations are left-associative.
 - Particularly note that `->` is right associative.
 - Equality and inequality are not associative, i.e. can't be used in chains.
+
 
 ## Semantics
 
@@ -107,8 +108,12 @@ The order in which symbolic variables are declared is important as this is their
 ### Expressions
 
 All expressions are evaluated to form BDDs. An expression is either a conjunction, disjunction or negation of other
-expressions, or a primary expression. A primary expression is either a symbolic variable (declared with `bvar`), a
-boolean constant (`true` or `false`), a parenthesised expression or a BDD variable.
+expressions, or a primary expression. A primary expression is either 
+- a parenthesised expression
+- a symbolic variable (declared with `bvar`)
+- an identifier (declared with `set`)
+- a boolean constant (`true` or `false`)
+- an integer ID that corresponds to some BDD node
 
 ### Assignments
 
