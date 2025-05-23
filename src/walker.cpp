@@ -78,7 +78,8 @@ void Walker::walk_raw(const stmt& statement) {
                 LOG(INFO) << "Executing Assignment Statement...";
                 walk_assign_stmt(stmt);
             } else {
-                throw ExecutionException("Unknown statement type", "Walker::walk_raw");
+                throw ExecutionException("Unknown statement type",
+                                         "Walker::walk_raw");
             }
         },
         statement);
@@ -94,10 +95,13 @@ void Walker::walk_decl_stmt(const decl_stmt& statement) {
             bdd_ordering.push_back(identifier.lexeme);
             out << "Declared Symbolic Variable: " << identifier.lexeme << '\n';
         } else {
-            if (std::holds_alternative<Bvar_ptype>(globals[identifier.lexeme])) {
-                out << "Variable already declared: " << identifier.lexeme << '\n';
+            if (std::holds_alternative<Bvar_ptype>(
+                    globals[identifier.lexeme])) {
+                out << "Variable already declared: " << identifier.lexeme
+                    << '\n';
             } else {
-                out << "Variable name conflict (making a variable holding a bdd symbolic), "
+                out << "Variable name conflict (making a variable holding a "
+                       "bdd symbolic), "
                        "ignoring: "
                     << identifier.lexeme << '\n';
             }
@@ -117,8 +121,10 @@ void Walker::walk_assign_stmt(const assign_stmt& statement) {
     }
 
     const id_type bdd_id = construct_bdd(*statement.value);
-    globals[statement.target->name.lexeme] = Bdd_ptype{statement.target->name.lexeme, bdd_id};
-    out << "Assigned to " << statement.target->name.lexeme << " with BDD ID: " << bdd_id << '\n';
+    globals[statement.target->name.lexeme] =
+        Bdd_ptype{statement.target->name.lexeme, bdd_id};
+    out << "Assigned to " << statement.target->name.lexeme
+        << " with BDD ID: " << bdd_id << '\n';
 }
 
 void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
@@ -126,7 +132,8 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
         case Token::Type::TREE_DISPLAY: {
             LOG(INFO) << "Tree Display Function Called";
             if (statement.arguments.size() != 1) {
-                throw ExecutionException("Invalid number of arguments for tree display", __func__);
+                throw ExecutionException(
+                    "Invalid number of arguments for tree display", __func__);
             }
             id_type bdd_id = construct_bdd(*statement.arguments[0]);
             out << "BDD ID: " << bdd_id << '\n';
@@ -135,7 +142,8 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
         }
         case Token::Type::GRAPH_DISPLAY: {
             if (statement.arguments.size() != 1) {
-                throw ExecutionException("Invalid number of arguments for graph display", __func__);
+                throw ExecutionException(
+                    "Invalid number of arguments for graph display", __func__);
             }
 
             id_type bdd_id = construct_bdd(*statement.arguments[0]);
@@ -145,7 +153,8 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
         }
         case Token::Type::IS_SAT: {
             if (statement.arguments.size() != 1) {
-                throw ExecutionException("Invalid number of arguments for is_sat", __func__);
+                throw ExecutionException(
+                    "Invalid number of arguments for is_sat", __func__);
             }
 
             if (id_type bdd_id = construct_bdd(*statement.arguments[0]);
@@ -158,15 +167,18 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
         }
         case Token::Type::SOURCE: {
             if (statement.arguments.size() != 1) {
-                throw ExecutionException("Invalid number of arguments for source", __func__);
+                throw ExecutionException(
+                    "Invalid number of arguments for source", __func__);
             }
             LOG(INFO) << "Source Function Called" << '\n';
 
             if (!std::holds_alternative<identifier>(*statement.arguments[0])) {
-                throw ExecutionException("Invalid argument type for source", __func__);
+                throw ExecutionException("Invalid argument type for source",
+                                         __func__);
             }
 
-            auto filename = std::get<identifier>(*statement.arguments[0]).name.lexeme;
+            auto filename =
+                std::get<identifier>(*statement.arguments[0]).name.lexeme;
 
             // Read all of the file into the buffer
             std::string buffer;
@@ -191,7 +203,12 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
                 return;
             }
 
-            parse_result_t estmts = parse(buffer);
+            lex_result_t tokens = scan_to_tokens(buffer);
+            if (!tokens.has_value()) {
+                out << tokens.error().what() << '\n';
+                return;
+            }
+            parse_result_t estmts = parse(*tokens);
             if (!estmts.has_value()) {
                 for (const auto& error : estmts.error()) {
                     out << error.what() << '\n';
@@ -212,5 +229,3 @@ void Walker::walk_expr_stmt(const expr_stmt& statement) {
     const id_type bdd_id = construct_bdd(*statement.expression);
     out << "BDD ID: " << bdd_id << '\n';
 }
-
-

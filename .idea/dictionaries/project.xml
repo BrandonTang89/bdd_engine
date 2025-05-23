@@ -3,6 +3,7 @@
     <words>
       <w>binop</w>
       <w>bvar</w>
+      <w>estmt</w>
       <w>estmts</w>
       <w>gviz</w>
     </words>

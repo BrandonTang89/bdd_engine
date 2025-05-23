@@ -1,6 +1,9 @@
+
 #include <fstream>
 
 #include "absl/strings/match.h"
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_split.h"
 #include "catch2/catch_test_macros.hpp"
 #include "interp_tester.h"
 
@@ -283,5 +286,31 @@ TEST_CASE("Source Function") {
     SECTION("Nonexistent Source File") {
         interp.feed("source nonexistent_file.txt;");
         REQUIRE(absl::StrContains(interp.get_output(), "Failed to open file"));
+    }
+}
+
+TEST_CASE("Using IDs as Expressions") {
+    InterpTester interp;
+    interp.feed("bvar x y z;");
+
+    SECTION("Valid ID Usage") {
+        interp.feed("x & y;");
+        auto out = interp.get_output();
+        std::vector<std::string> numbers =
+            absl::StrSplit(out, ' ', [](absl::string_view s) {
+                int number;
+                return absl::SimpleAtoi(s, &number);
+            });
+        REQUIRE(numbers.size() > 0);
+        int id = 0;
+        absl::SimpleAtoi(numbers[0], &id);
+
+        REQUIRE(interp.expr_tree_repr(std::format("z & {};", id)) ==
+                "x ? (y ? (z ? (TRUE) : (FALSE)) : (FALSE)) : (FALSE)");
+    }
+
+    SECTION("Invalid ID Usage") {
+        interp.feed("x & 100;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
     }
 }

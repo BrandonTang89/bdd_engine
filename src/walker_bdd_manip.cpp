@@ -99,7 +99,15 @@ id_type Walker::construct_bdd(const expr& x) {
                 }
             } else if constexpr (std::is_same_v<T, identifier>) {
                 // Handle identifier
-                if (globals.contains(expr.name.lexeme)) {
+                if (expr.name.type == Token::Type::ID) {
+                    if (id_to_iter.contains(*expr.name.value)) {
+                        return ret_id = *expr.name.value;
+                    } else {
+                        throw ExecutionException(
+                            "ID not found: " + expr.name.lexeme,
+                            "Walker::construct_bdd");
+                    }
+                } else if (globals.contains(expr.name.lexeme)) {
                     if (std::holds_alternative<Bvar_ptype>(
                             globals[expr.name.lexeme])) {
                         // Handle BDD variable

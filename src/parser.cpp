@@ -3,7 +3,7 @@
 
 #include "absl/log/log.h"
 #include "ast.h"
-#include "token.h"
+#include "lexer.h"
 
 // Parses a vector of tokens into an AST
 parse_result_t parse(const std::vector<Token>& tokens) {
@@ -35,11 +35,6 @@ parse_result_t parse(const std::vector<Token>& tokens) {
     return statements;  // Return the parsed statements
 }
 // Combines the lexer and the parser
-parse_result_t parse(const std::string& input) {
-    // Tokenise the input string
-    const auto tokens = scan_to_tokens(input);
-    return parse(tokens);
-}
 
 stmt parse_statement(const_span& sp) {
     switch (sp.front().type) {
@@ -289,7 +284,8 @@ std::shared_ptr<expr> parse_unary(const_span& sp) {
 
 // Parse a Primary Expression
 std::shared_ptr<expr> parse_primary(const_span& sp) {
-    if (sp.front().type == Token::Type::IDENTIFIER) {
+    if (sp.front().type == Token::Type::IDENTIFIER ||
+        sp.front().type == Token::Type::ID) {
         const auto id = parse_ident(sp);
         return std::make_shared<expr>(*id);
     } else if (sp.front().type == Token::Type::TRUE ||
@@ -308,7 +304,8 @@ std::shared_ptr<expr> parse_primary(const_span& sp) {
 
 // Parse an Identifier
 std::shared_ptr<identifier> parse_ident(const_span& sp) {
-    if (sp.front().type != Token::Type::IDENTIFIER) {
+    if (sp.front().type != Token::Type::IDENTIFIER &&
+        sp.front().type != Token::Type::ID) {
         throw ParserException("Expected identifier", sp.front(), __func__);
     }
     auto id = std::make_shared<identifier>(sp.front());

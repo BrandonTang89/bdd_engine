@@ -6,23 +6,29 @@
 #include "absl/log/log.h"
 #include "colours.h"
 #include "config.h"
+#include "lexer.h"
 #include "parser.h"
-#include "token.h"
 
 void evaluate(const std::string& user_input, Walker& walker) {
-    const std::vector<Token> stream = scan_to_tokens(user_input);
+    const lex_result_t tokens = scan_to_tokens(user_input);
+    if (!tokens.has_value()) {
+        set_colour(std::cout, Colour::RED);
+        std::cout << tokens.error().what() << '\n';
+        set_colour(std::cout);
+        return;
+    }
 
     if constexpr (echo_input) {
         LOG(WARNING) << "Input: " << user_input << '\n';
     }
 
     if constexpr (print_tokens) {
-        for (const auto& token : stream) {
+        for (const auto& token : *tokens) {
             LOG(WARNING) << token.repr();
         }
     }
 
-    auto estmt = parse(stream);
+    auto estmt = parse(*tokens);
     std::vector<stmt> statements = {};
 
     if (!estmt.has_value()) {

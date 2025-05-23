@@ -16,7 +16,7 @@ TEST_CASE("Parse Valid") {
         display_tree a;
     )";
 
-    std::vector<stmt> statements = ParserTester().feed(input);
+    std::vector<stmt> statements = LexerParserTester().feed(input);
     REQUIRE(statements.size() == 5);
     REQUIRE(std::holds_alternative<decl_stmt>(statements[0]));
     REQUIRE(std::holds_alternative<assign_stmt>(statements[1]));
@@ -26,7 +26,7 @@ TEST_CASE("Parse Valid") {
 }
 
 TEST_CASE("Invalid Declaration") {
-    ParserTester parser_tester;
+    LexerParserTester parser_tester;
     SECTION("Declaration with commas") {
         std::string input = R"(
             bvar x, y, z;

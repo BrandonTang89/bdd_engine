@@ -1,8 +1,6 @@
 #pragma once
-
+#include <cassert>
 #include <cstdint>
-#include <string>
-#include <vector>
 
 struct Token {
     enum class Type : std::uint8_t {
@@ -17,13 +15,14 @@ struct Token {
         // Single or Double Character Tokens
         EQUAL,
         EQUAL_EQUAL,
-    BANG,
+        BANG,
         BANG_EQUAL,
         ARROW,
-        MINUS, // currently unused
+        MINUS,  // currently unused
 
         // Multiple character tokens
         IDENTIFIER,
+        ID,
 
         // Keywords
         BVAR,
@@ -43,13 +42,19 @@ struct Token {
     };
 
     Type type;
-    std::string lexeme;  // the text of the token
+    std::string lexeme;               // the text of the token
+    std::optional<uint32_t> value{};  // optional value for number tokens
 
-    Token(const Type type, const std::string& lexeme) : type(type), lexeme(lexeme) {}
+    Token(const Type type, const std::string& lexeme,
+          const std::optional<int> value = std::nullopt)
+        : type(type), lexeme(lexeme), value(value) {
+        assert(type != Type::ID || value.has_value());
+    }
 
     std::string repr() const {
-        return "Token(" + std::to_string(static_cast<int>(type)) + ", " + lexeme + ")";
+        return "Token(" + std::to_string(static_cast<int>(type)) + ", " +
+               lexeme +
+               (value.has_value() ? ", " + std::to_string(value.value()) : "") +
+               ")";
     }
 };
-
-std::vector<Token> scan_to_tokens(const std::string& source);

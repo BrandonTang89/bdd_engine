@@ -5,16 +5,16 @@
 
 #include "ast.h"
 #include "engine_exceptions.h"
-#include "token.h"
+#include "lexer.h"
 
 // Type alias for a constant iterator over expressions
 using const_iter = std::vector<Token>::const_iterator;
 using const_span = std::span<const Token>;
 
 // Parses a vector of expressions into an Abstract Syntax Tree (AST)
-using parse_result_t = std::expected<std::vector<stmt>, std::vector<ParserException>>;
+using parse_result_t =
+    std::expected<std::vector<stmt>, std::vector<ParserException>>;
 parse_result_t parse(const std::vector<Token>& tokens);
-parse_result_t parse(const std::string& input);
 
 // Parses a single statement
 stmt parse_statement(const_span& sp);

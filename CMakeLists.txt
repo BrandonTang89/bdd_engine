@@ -18,12 +18,13 @@ find_package(Catch2)
 add_executable(${PROJECT_NAME}
         src/main.cpp
         src/repl.cpp
-        src/token.cpp
+        src/lexer.cpp
         src/parser.cpp
         src/ast.cpp
         src/walker.cpp
         src/walker_bdd_view.cpp
         src/walker_bdd_manip.cpp
+        src/Token.h
 )
 target_link_libraries(${PROJECT_NAME} abseil::abseil)
 
@@ -34,12 +35,14 @@ add_executable(tests
         tests/test_walker.cpp
         tests/test_parser.cpp
         tests/benchmark_walker.cpp
-        src/token.cpp
+        src/lexer.cpp
         src/parser.cpp
         src/ast.cpp
         src/walker.cpp
         src/walker_bdd_view.cpp
         src/walker_bdd_manip.cpp
+        src/Token.h
+        tests/test_lexer.cpp
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain abseil::abseil)
 add_test(NAME bdd_engine_tests COMMAND tests)

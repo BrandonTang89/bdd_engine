@@ -1,4 +1,4 @@
-#include "token.h"
+#include "lexer.h"
 
 #include <unordered_map>
 
@@ -19,7 +19,7 @@ constexpr bool is_lexeme_char(const char c) {
     return isalpha(c) || isdigit(c) || c == '_' || c == '.';
 }
 
-std::vector<Token> scan_to_tokens(const std::string& source) {
+lex_result_t scan_to_tokens(const std::string& source) {
     std::vector<Token> tokens;
     size_t i = 0;
 
@@ -68,6 +68,12 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
                     tokens.emplace_back(Token::Type::MINUS, "-");
                 }
                 break;
+            case '\n':
+            case '\r':
+            case '\t':
+            case ' ':
+                // Ignore whitespace
+                break;
             default:
                 if (isalpha(c)) {
                     std::string identifier;
@@ -80,10 +86,20 @@ std::vector<Token> scan_to_tokens(const std::string& source) {
                                             identifier);
                     } else {
                         tokens.emplace_back(Token::Type::IDENTIFIER,
-                                            identifier);
+                                            std::move(identifier));
                     }
+                } else if (isdigit(c)) {
+                    uint32_t number = 0;
+                    while (isdigit(c)) {
+                        number = number * 10 + (c - '0');
+                        c = source[++i];
+                    }
+                    tokens.emplace_back(Token::Type::ID,
+                                        std::to_string(number), number);
                 } else {
-                    ++i;  // Skip unrecognised characters
+                    return std::unexpected<LexerException>(LexerException(
+                        "Unexpected character: " + std::string(1, c),
+                        __func__));
                 }
                 continue;  // Skip the increment at the end of the loop
         }

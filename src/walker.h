@@ -64,7 +64,7 @@ class Walker {
     std::ostringstream out;  // printable output
     id_type counter{};       // monotonically increasing human indices
     id_iter_map id_to_iter;
-    node_id_map node_to_id;
+    node_id_map node_to_id;  // main map that holds the BDD nodes
 
     iter_type iter_to_false;
     iter_type iter_to_true;
@@ -86,14 +86,18 @@ class Walker {
     id_type get_id(const Bdd_Node& node);
 
     // BDD Construction
-    std::unordered_map<std::tuple<id_type, id_type, BinOpType>, id_type, absl::Hash<std::tuple<id_type, id_type, BinOpType>>> binop_memo;
+    std::unordered_map<std::tuple<id_type, id_type, BinOpType>, id_type,
+                       absl::Hash<std::tuple<id_type, id_type, BinOpType>>>
+        binop_memo;
     id_type rec_apply_and(id_type a, id_type b);
     id_type rec_apply_or(id_type a, id_type b);
 
     std::map<id_type, id_type> not_memo;
     id_type rec_apply_not(id_type a);
 
-    std::unordered_map<std::tuple<id_type, size_t>, id_type, absl::Hash<std::tuple<id_type, size_t>>> quantifier_memo;
+    std::unordered_map<std::tuple<id_type, size_t>, id_type,
+                       absl::Hash<std::tuple<id_type, size_t>>>
+        quantifier_memo;
     // (bdd_id, number_of_bound_vars_left)
 
     template <typename Comb_Fn_Type>
@@ -101,7 +105,8 @@ class Walker {
                             Comb_Fn_Type comb_fn);
 
     // // BDD Viewing
-    std::unordered_map<id_type, bool> is_sat_memo;  // check if BDD is satisfiable
+    std::unordered_map<id_type, bool>
+        is_sat_memo;  // check if BDD is satisfiable
     bool is_sat(id_type a);
 
     std::unordered_set<id_type> get_bdd_nodes(id_type id);

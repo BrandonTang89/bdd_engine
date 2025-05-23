@@ -2,7 +2,7 @@
 #include <memory>
 #include <variant>
 
-#include "token.h"
+#include "lexer.h"
 
 // Expressions
 struct bin_expr;
