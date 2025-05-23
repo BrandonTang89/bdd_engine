@@ -200,10 +200,6 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
             }
 
             walk_statements(*estmts);
-            // for (const auto& statement : *estmts) {
-            //     walk(statement);
-            // }
-
             break;
         }
         default:

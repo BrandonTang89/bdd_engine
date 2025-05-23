@@ -4,6 +4,7 @@
       <w>binop</w>
       <w>bvar</w>
       <w>estmts</w>
+      <w>gviz</w>
     </words>
   </dictionary>
 </component>
