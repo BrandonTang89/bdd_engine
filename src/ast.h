@@ -14,19 +14,19 @@ struct quantifier_expr;
 using expr = std::variant<std::monostate, bin_expr, quantifier_expr, unary_expr,
                           literal, identifier>;
 struct bin_expr {
-    std::unique_ptr<expr> left;
-    std::unique_ptr<expr> right;
+    std::shared_ptr<expr> left;
+    std::shared_ptr<expr> right;
     Token op;
 };
 
 struct quantifier_expr {
     Token quantifier;
     std::vector<Token> bound_vars;
-    std::unique_ptr<expr> body;
+    std::shared_ptr<expr> body;
 };
 
 struct unary_expr {
-    std::unique_ptr<expr> operand;
+    std::shared_ptr<expr> operand;
     Token op;
 };
 
@@ -47,12 +47,12 @@ using stmt = std::variant<std::monostate, expr_stmt, func_call_stmt, decl_stmt,
                           assign_stmt>;
 
 struct expr_stmt {
-    std::unique_ptr<expr> expression;
+    std::shared_ptr<expr> expression;
 };
 
 struct func_call_stmt {
     Token func_name;
-    std::vector<std::unique_ptr<expr>> arguments;
+    std::vector<std::shared_ptr<expr>> arguments;
 };
 
 struct decl_stmt {
@@ -60,13 +60,14 @@ struct decl_stmt {
 };
 
 struct assign_stmt {
-    std::unique_ptr<identifier> target;
-    std::unique_ptr<expr> value;
+    std::shared_ptr<identifier> target;
+    std::shared_ptr<expr> value;
 };
 
 std::string stmt_repr(const stmt& statement);
 std::string expr_repr(const expr& expression);
-std::unique_ptr<expr> clone_expr(const std::unique_ptr<expr>& expression);
+[[maybe_unused]]  std::shared_ptr<expr> clone_expr(const std::shared_ptr<expr>& expression);
 
 static_assert(std::is_move_constructible_v<stmt>, "stmt must be movable");
 static_assert(std::is_move_constructible_v<expr>, "expr must be movable");
+

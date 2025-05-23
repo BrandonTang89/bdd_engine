@@ -29,8 +29,12 @@ struct Bdd_Node {
     }
 };
 
+// Binary operation types for the memo table
+enum class BinOpType : std::uint8_t { AND, OR };
+
 // Variable Types
-// Each variable is either a BDD symbol or a variable that represents a binary decision diagram
+// Each variable is either a BDD symbol or a variable that represents a binary
+// decision diagram
 struct Bvar_ptype {
     // Binary variable type
     std::string name{};
@@ -48,12 +52,13 @@ enum class Ptype_type : std::uint8_t { BVAR = 0, BDD = 1 };
 // Walker Types to hold BDDs
 using node_id_map = std::unordered_map<Bdd_Node, id_type, absl::Hash<Bdd_Node>>;
 using iter_type = node_id_map::iterator;
-using id_iter_map = std::unordered_map<id_type, iter_type>;  // human_ids -> iter
+using id_iter_map =
+    std::unordered_map<id_type, iter_type>;  // human_ids -> iter
 
 class Walker {
     // An instance of the tree-walk interpreter
-    // Manages the environment of the interpreter and available BDDs in the memory
-    // Side-effect-free, output is written to this->out stream
+    // Manages the environment of the interpreter and available BDDs in the
+    // memory Side-effect-free, output is written to this->out stream
     friend class InterpTester;
 
     std::ostringstream out;  // printable output
@@ -65,45 +70,54 @@ class Walker {
     iter_type iter_to_true;
 
     // void execution_error(std::string message, std::string function_name,
-    //                          std::source_location = std::source_location::current());
+    //                          std::source_location =
+    //                          std::source_location::current());
     std::unordered_map<std::string, Ptype> globals;
-    void walk_raw(const stmt& statement);  // May throw execution exceptions, dispatches to the
-                                           // correct function
+    void walk_raw(const stmt& statement);  // May throw execution exceptions,
+                                           // dispatches to the correct function
     void walk_decl_stmt(const decl_stmt& statement);
     void walk_assign_stmt(const assign_stmt& statement);
     void walk_func_call_stmt(const func_call_stmt& statement);
     void walk_expr_stmt(const expr_stmt& statement);
 
-    std::vector<std::string> bdd_ordering;                       // for BDD ordering
-    std::unordered_map<std::string, uint32_t> bdd_ordering_map;  // for BDD ordering
+    std::vector<std::string> bdd_ordering;  // for BDD ordering
+    std::unordered_map<std::string, uint32_t>
+        bdd_ordering_map;  // for BDD ordering
 
     id_type construct_bdd(const expr& x);
     id_type get_id(const Bdd_Node& node);
 
     // BDD Construction
-    std::map<std::tuple<id_type, id_type>, id_type> binop_memo;
+    std::map<std::tuple<id_type, id_type, BinOpType>, id_type> binop_memo;
     id_type rec_apply_and(id_type a, id_type b);
     id_type rec_apply_or(id_type a, id_type b);
 
-    std::map<id_type, id_type> unary_memo;
+    std::map<id_type, id_type> not_memo;
     id_type rec_apply_not(id_type a);
 
-    std::map<std::tuple<id_type, size_t>, id_type>
-        quantifier_memo;  // (bdd_id, number_of_bound_vars_left)
+    std::map<std::tuple<id_type, size_t>, id_type> quantifier_memo;
+    // (bdd_id, number_of_bound_vars_left)
+
     template <typename Comb_Fn_Type>
-    id_type rec_apply_quant(id_type a, std::span<std::string> bound_vars, Comb_Fn_Type comb_fn);
+    id_type rec_apply_quant(id_type a, std::span<std::string> bound_vars,
+                            Comb_Fn_Type comb_fn);
 
     // // BDD Viewing
-    std::unordered_map<id_type, bool> is_sat_memo;  // check if BDD is satisfiable
+    std::unordered_map<id_type, bool>
+        is_sat_memo;  // check if BDD is satisfiable
     bool is_sat(id_type a);
 
     std::unordered_set<id_type> get_bdd_nodes(id_type id);
     std::string bdd_repr(id_type id);
     std::string bdd_gviz_repr(id_type id);
 
+    void clear_memos();
+
    public:
     Walker();
-    void walk_single(const stmt& statement);                    // Walk AST, handles exceptions
-    void walk_statements(const std::span<stmt>& statements);  // Returns early on exceptions
-    std::string get_output();  // clears the output buffer and returns the output
+    void walk_single(const stmt& statement);  // Walk AST, handles exceptions
+    void walk_statements(
+        const std::span<stmt>& statements);  // Returns early on exceptions
+    std::string
+    get_output();  // clears the output buffer and returns the output
 };

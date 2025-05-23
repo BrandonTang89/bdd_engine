@@ -216,3 +216,5 @@ void Walker::walk_expr_stmt(const expr_stmt& statement) {
     const id_type bdd_id = construct_bdd(*statement.expression);
     out << "BDD ID: " << bdd_id << '\n';
 }
+
+

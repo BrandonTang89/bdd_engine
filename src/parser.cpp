@@ -41,23 +41,6 @@ parse_result_t parse(const std::string& input) {
     return parse(tokens);
 }
 
-// // Parses a single statement
-// stmt parse_statement(const_span& sp) {
-//     switch (sp.front().type) {
-//         case Token::Type::BVAR:
-//             return parse_decl(sp);
-//         case Token::Type::SET:
-//             return parse_assign(sp);
-//         case Token::Type::TREE_DISPLAY:
-//         case Token::Type::GRAPH_DISPLAY:
-//         case Token::Type::IS_SAT:
-//         case Token::Type::SOURCE:
-//             return parse_func_call(sp);
-//         default:  // assume expr statement
-//             return parse_expr_stmt(sp);
-//     }
-// }
-
 stmt parse_statement(const_span& sp) {
     switch (sp.front().type) {
         case Token::Type::BVAR:
@@ -73,6 +56,7 @@ stmt parse_statement(const_span& sp) {
             return parse_expr_stmt(sp);
     }
 }
+
 // Parse a Declaration Statement
 decl_stmt parse_decl(const_span& sp) {
     decl_stmt decl;
@@ -146,7 +130,7 @@ expr_stmt parse_expr_stmt(const_span& sp) {
 }
 
 // Handle the equivalence (==) and XOR (!=) operations
-std::unique_ptr<expr> parse_expr(const_span& sp) {
+std::shared_ptr<expr> parse_expr(const_span& sp) {
     auto left{parse_implication(sp)};
 
     if (!sp.empty()) {
@@ -157,21 +141,20 @@ std::unique_ptr<expr> parse_expr(const_span& sp) {
             auto right = parse_implication(sp);
 
             // Create (p & q)
-            auto p_and_q = std::make_unique<expr>(
-                bin_expr{clone_expr(left), clone_expr(right),
-                         Token{Token::Type::LAND, "&"}});
+            auto p_and_q = std::make_shared<expr>(
+                bin_expr{left, right, Token{Token::Type::LAND, "&"}});
 
             // Create (!p & !q)
-            auto not_p = std::make_unique<expr>(
+            auto not_p = std::make_shared<expr>(
                 unary_expr{std::move(left), Token{Token::Type::BANG, "!"}});
-            auto not_q = std::make_unique<expr>(
+            auto not_q = std::make_shared<expr>(
                 unary_expr{std::move(right), Token{Token::Type::BANG, "!"}});
-            auto not_p_and_not_q = std::make_unique<expr>(
+            auto not_p_and_not_q = std::make_shared<expr>(
                 bin_expr{std::move(not_p), std::move(not_q),
                          Token{Token::Type::LAND, "&"}});
 
             // Create (p & q) | (!p & !q)
-            return std::make_unique<expr>(
+            return std::make_shared<expr>(
                 bin_expr{std::move(p_and_q), std::move(not_p_and_not_q),
                          Token{Token::Type::LOR, "|"}});
         }
@@ -182,22 +165,22 @@ std::unique_ptr<expr> parse_expr(const_span& sp) {
             sp = sp.subspan(1);  // Skip the '!=' token
             auto right = parse_implication(sp);
 
-            auto not_p = std::make_unique<expr>(
-                unary_expr{clone_expr(left), Token{Token::Type::BANG, "!"}});
-            auto not_q = std::make_unique<expr>(
-                unary_expr{clone_expr(right), Token{Token::Type::BANG, "!"}});
+            auto not_p = std::make_shared<expr>(
+                unary_expr{left, Token{Token::Type::BANG, "!"}});
+            auto not_q = std::make_shared<expr>(
+                unary_expr{right, Token{Token::Type::BANG, "!"}});
 
             // Create (p & !q)
-            auto p_and_not_q = std::make_unique<expr>(
+            auto p_and_not_q = std::make_shared<expr>(
                 bin_expr{std::move(left), std::move(not_q),
                          Token{Token::Type::LAND, "&"}});
             // Create (!p & q)
-            auto not_p_and_q = std::make_unique<expr>(
+            auto not_p_and_q = std::make_shared<expr>(
                 bin_expr{std::move(not_p), std::move(right),
                          Token{Token::Type::LAND, "&"}});
 
             // Create (p & !q) | (!p & q)
-            return std::make_unique<expr>(
+            return std::make_shared<expr>(
                 bin_expr{std::move(p_and_not_q), std::move(not_p_and_q),
                          Token{Token::Type::LOR, "|"}});
         }
@@ -209,47 +192,47 @@ std::unique_ptr<expr> parse_expr(const_span& sp) {
 // Parse an implication
 // Looks for implications with right-associativity
 // syntactic sugar for '(not p) | q'
-std::unique_ptr<expr> parse_implication(const_span& sp) {
+std::shared_ptr<expr> parse_implication(const_span& sp) {
     auto premise{parse_disjunct(sp)};
     if (!sp.empty() && sp.front().type == Token::Type::ARROW) {
         const auto op = sp.front();
         sp = sp.subspan(1);  // Skip the '->' token
         auto conclusion = parse_implication(sp);
-        return std::make_unique<expr>(
-            bin_expr{std::make_unique<expr>(unary_expr{
-                         std::move(premise), Token{Token::Type::BANG, "!"}}),
+        return std::make_shared<expr>(
+            bin_expr{std::make_shared<expr>(
+                         unary_expr{premise, Token{Token::Type::BANG, "!"}}),
                      std::move(conclusion), Token{Token::Type::LOR, "|"}});
     }
     return premise;
 }
 
-std::unique_ptr<expr> parse_disjunct(const_span& sp) {
+std::shared_ptr<expr> parse_disjunct(const_span& sp) {
     auto conjunct{parse_conjunct(sp)};
     while (sp.front().type == Token::Type::LOR) {
         const auto op = sp.front();
         sp = sp.subspan(1);  // Skip the '|' token
         auto right = parse_conjunct(sp);
-        conjunct = std::make_unique<expr>(
+        conjunct = std::make_shared<expr>(
             bin_expr{std::move(conjunct), std::move(right), op});
     }
     return conjunct;
 }
 
 // Parse a Conjunct Expression
-std::unique_ptr<expr> parse_conjunct(const_span& sp) {
+std::shared_ptr<expr> parse_conjunct(const_span& sp) {
     auto unary_expr{parse_quantifier(sp)};
     while (sp.front().type == Token::Type::LAND) {
         const auto op = sp.front();
         sp = sp.subspan(1);  // Skip the '&' token
         auto right = parse_quantifier(sp);
-        unary_expr = std::make_unique<expr>(
+        unary_expr = std::make_shared<expr>(
             bin_expr{std::move(unary_expr), std::move(right), op});
     }
     return unary_expr;
 }
 
 // Parse a Quantifier Expression
-std::unique_ptr<expr> parse_quantifier(const_span& sp) {
+std::shared_ptr<expr> parse_quantifier(const_span& sp) {
     // exists '(' IDENTIFIER+ ')' unary
     // forall '(' IDENTIFIER+ ')' unary
 
@@ -285,7 +268,7 @@ std::unique_ptr<expr> parse_quantifier(const_span& sp) {
         }
 
         auto body = parse_unary(sp);
-        return std::make_unique<expr>(quantifier_expr{
+        return std::make_shared<expr>(quantifier_expr{
             quantifier, std::move(bound_vars), std::move(body)});
     } else {
         // no quantifier
@@ -294,25 +277,25 @@ std::unique_ptr<expr> parse_quantifier(const_span& sp) {
 }
 
 // Parse a Unary Expression
-std::unique_ptr<expr> parse_unary(const_span& sp) {
+std::shared_ptr<expr> parse_unary(const_span& sp) {
     if (sp.front().type == Token::Type::BANG) {
         const auto op = sp.front();
         sp = sp.subspan(1);  // Skip the '!' token
         auto operand = parse_unary(sp);
-        return std::make_unique<expr>(unary_expr{std::move(operand), op});
+        return std::make_shared<expr>(unary_expr{std::move(operand), op});
     }
     return parse_primary(sp);
 }
 
 // Parse a Primary Expression
-std::unique_ptr<expr> parse_primary(const_span& sp) {
+std::shared_ptr<expr> parse_primary(const_span& sp) {
     if (sp.front().type == Token::Type::IDENTIFIER) {
         const auto id = parse_ident(sp);
-        return std::make_unique<expr>(*id);
+        return std::make_shared<expr>(*id);
     } else if (sp.front().type == Token::Type::TRUE ||
                sp.front().type == Token::Type::FALSE) {
         const auto lit = parse_literal(sp);
-        return std::make_unique<expr>(*lit);
+        return std::make_shared<expr>(*lit);
     } else if (sp.front().type == Token::Type::LEFT_PAREN) {
         sp = sp.subspan(1);  // Skip the '(' token
         auto expr = parse_expr(sp);
@@ -324,22 +307,22 @@ std::unique_ptr<expr> parse_primary(const_span& sp) {
 }
 
 // Parse an Identifier
-std::unique_ptr<identifier> parse_ident(const_span& sp) {
+std::shared_ptr<identifier> parse_ident(const_span& sp) {
     if (sp.front().type != Token::Type::IDENTIFIER) {
         throw ParserException("Expected identifier", sp.front(), __func__);
     }
-    auto id = std::make_unique<identifier>(sp.front());
+    auto id = std::make_shared<identifier>(sp.front());
     sp = sp.subspan(1);  // Skip the identifier token
     return id;
 }
 
 // Parse a Literal
-std::unique_ptr<literal> parse_literal(const_span& sp) {
+std::shared_ptr<literal> parse_literal(const_span& sp) {
     if (sp.front().type != Token::Type::TRUE &&
         sp.front().type != Token::Type::FALSE) {
         throw ParserException("Expected literal", sp.front(), __func__);
     }
-    auto lit = std::make_unique<literal>(sp.front());
+    auto lit = std::make_shared<literal>(sp.front());
     sp = sp.subspan(1);  // Skip the literal token
     return lit;
 }

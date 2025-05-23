@@ -5,6 +5,12 @@
 #include "engine_exceptions.h"
 #include "walker.h"
 
+void Walker::clear_memos() {  // for later: Implement garbage collection
+    binop_memo.clear();
+    not_memo.clear();
+    is_sat_memo.clear();
+}
+
 id_type Walker::construct_bdd(const expr& x) {
     id_type ret_id{};
     std::visit(
@@ -14,13 +20,14 @@ id_type Walker::construct_bdd(const expr& x) {
                 const id_type left_bdd = construct_bdd(*expr.left);
                 const id_type right_bdd = construct_bdd(*expr.right);
                 id_type combined_bdd = 0;
-                binop_memo.clear();
+
                 if (expr.op.type == Token::Type::LAND) {
                     combined_bdd = rec_apply_and(left_bdd, right_bdd);
                 } else if (expr.op.type == Token::Type::LOR) {
                     combined_bdd = rec_apply_or(left_bdd, right_bdd);
                 } else {
-                    throw std::runtime_error("Unsupported binary operator" + expr.op.lexeme);
+                    throw std::runtime_error("Unsupported binary operator" +
+                                             expr.op.lexeme);
                 }
                 return ret_id = combined_bdd;
             } else if constexpr (std::is_same_v<T, quantifier_expr>) {
@@ -34,32 +41,40 @@ id_type Walker::construct_bdd(const expr& x) {
                 const Bdd_Node& body_bdd_node = id_to_iter[body_bdd]->first;
                 assert(body_bdd_node.type == Bdd_Node::Bdd_type::INTERNAL);
 
-                // Ensure that the bound variables at least as high in bdd_ordering as the top
-                // node of the body,
-                // Sort the bound variables in the order of their appearance in bdd_ordering
-                auto vw = expr.bound_vars |
-                          std::views::transform([](const auto& id) { return id.lexeme; }) |
-                          std::views::filter([this, &body_bdd_node](const auto& id) {
-                              return bdd_ordering_map[id] >= bdd_ordering_map[body_bdd_node.var];
-                          });
+                // Ensure that the bound variables at least as high in
+                // bdd_ordering as the top node of the body, Sort the bound
+                // variables in the order of their appearance in bdd_ordering
+                auto vw =
+                    expr.bound_vars | std::views::transform([](const auto& id) {
+                        return id.lexeme;
+                    }) |
+                    std::views::filter([this, &body_bdd_node](const auto& id) {
+                        return bdd_ordering_map[id] >=
+                               bdd_ordering_map[body_bdd_node.var];
+                    });
                 std::vector<std::string> bound_var_names(vw.begin(), vw.end());
-                std::ranges::sort(bound_var_names, [this](const auto& a, const auto& b) {
-                    return bdd_ordering_map[a] < bdd_ordering_map[b];
-                });
+                std::ranges::sort(
+                    bound_var_names, [this](const auto& a, const auto& b) {
+                        return bdd_ordering_map[a] < bdd_ordering_map[b];
+                    });
 
-                // Clear the Memo Tables
+                // Clear the quantifier memo but binary operation memos can be
+                // kept
                 quantifier_memo.clear();
-                binop_memo.clear();
 
                 // Apply the quantifier
                 if (expr.quantifier.type == Token::Type::EXISTS) {
                     return ret_id = rec_apply_quant(
                                body_bdd, bound_var_names,
-                               [this](const id_type a, const id_type b) { return rec_apply_or(a, b); });
+                               [this](const id_type a, const id_type b) {
+                                   return rec_apply_or(a, b);
+                               });
                 } else if (expr.quantifier.type == Token::Type::FORALL) {
                     return ret_id = rec_apply_quant(
                                body_bdd, bound_var_names,
-                               [this](const id_type a, const id_type b) { return rec_apply_and(a, b); });
+                               [this](const id_type a, const id_type b) {
+                                   return rec_apply_and(a, b);
+                               });
 
                 } else {
                     throw std::runtime_error("Unsupported quantifier type");
@@ -67,7 +82,6 @@ id_type Walker::construct_bdd(const expr& x) {
             } else if constexpr (std::is_same_v<T, unary_expr>) {
                 // Handle unary expression
                 const id_type operand_bdd = construct_bdd(*expr.operand);
-                unary_memo.clear();
                 if (expr.op.type == Token::Type::BANG) {
                     return ret_id = rec_apply_not(operand_bdd);
                 } else {
@@ -86,18 +100,24 @@ id_type Walker::construct_bdd(const expr& x) {
             } else if constexpr (std::is_same_v<T, identifier>) {
                 // Handle identifier
                 if (globals.contains(expr.name.lexeme)) {
-                    if (std::holds_alternative<Bvar_ptype>(globals[expr.name.lexeme])) {
+                    if (std::holds_alternative<Bvar_ptype>(
+                            globals[expr.name.lexeme])) {
                         // Handle BDD variable
                         const auto& bvar =
                             std::get<Bvar_ptype>(globals[expr.name.lexeme]);
-                        const Bdd_Node bdd_node{Bdd_Node::Bdd_type::INTERNAL, bvar.name, 1,
-                                          0};  // if x then high else low
+                        const Bdd_Node bdd_node{Bdd_Node::Bdd_type::INTERNAL,
+                                                bvar.name, 1,
+                                                0};  // if x then high else low
                         return ret_id = get_id(bdd_node);
                     } else {
-                        return ret_id = std::get<Bdd_ptype>(globals[expr.name.lexeme]).id;
+                        return ret_id = std::get<Bdd_ptype>(
+                                            globals[expr.name.lexeme])
+                                            .id;
                     }
                 } else {
-                    throw ExecutionException("Variable not found: " + expr.name.lexeme, "Walker::construct_bdd");
+                    throw ExecutionException(
+                        "Variable not found: " + expr.name.lexeme,
+                        "Walker::construct_bdd");
                 }
             } else {
                 return static_cast<id_type>(1);
@@ -137,13 +157,15 @@ id_type Walker::rec_apply_quant(id_type a, std::span<std::string> bound_vars,
     if (node.type == Bdd_Node::Bdd_type::TRUE) return 1;
     size_t var_index = 0;
     while (var_index < bound_vars.size() &&
-           bdd_ordering_map[bound_vars[var_index]] < bdd_ordering_map[node.var]) {
+           bdd_ordering_map[bound_vars[var_index]] <
+               bdd_ordering_map[node.var]) {
         ++var_index;
     }
 
     // Recursive Cases
     if (node.var == bound_vars[0]) {  // we quantify out this variable
-        id_type high = rec_apply_quant(node.high, bound_vars.subspan(1), comb_fn);
+        id_type high =
+            rec_apply_quant(node.high, bound_vars.subspan(1), comb_fn);
         id_type low = rec_apply_quant(node.low, bound_vars.subspan(1), comb_fn);
         if (high == low) return high;
         return quantifier_memo[memo_key] = comb_fn(high, low);
@@ -151,8 +173,8 @@ id_type Walker::rec_apply_quant(id_type a, std::span<std::string> bound_vars,
         const id_type high = rec_apply_quant(node.high, bound_vars, comb_fn);
         const id_type low = rec_apply_quant(node.low, bound_vars, comb_fn);
         if (high == low) return high;
-        return quantifier_memo[memo_key] =
-                   get_id(Bdd_Node{Bdd_Node::Bdd_type::INTERNAL, node.var, high, low});
+        return quantifier_memo[memo_key] = get_id(
+                   Bdd_Node{Bdd_Node::Bdd_type::INTERNAL, node.var, high, low});
     }
 }
 
@@ -162,12 +184,15 @@ id_type Walker::rec_apply_and(id_type a, id_type b) {
 
     // Base Cases
     if (node_a == node_b) return a;
-    if (node_a.type == Bdd_Node::Bdd_type::FALSE || node_b.type == Bdd_Node::Bdd_type::FALSE) {
+    if (node_a.type == Bdd_Node::Bdd_type::FALSE ||
+        node_b.type == Bdd_Node::Bdd_type::FALSE) {
         return 0;
     }
     if (node_a.type == Bdd_Node::Bdd_type::TRUE) return b;
     if (node_b.type == Bdd_Node::Bdd_type::TRUE) return a;
-    if (const auto mit = binop_memo.find(std::make_tuple(a, b));
+
+    // Use the memo with the AND operation type
+    if (const auto mit = binop_memo.find(std::make_tuple(a, b, BinOpType::AND));
         mit != binop_memo.end()) {
         return mit->second;
     }
@@ -192,10 +217,11 @@ id_type Walker::rec_apply_and(id_type a, id_type b) {
     }
 
     if (nhigh == nlow) {
-        return binop_memo[{a, b}] = nhigh;
+        return binop_memo[{a, b, BinOpType::AND}] = nhigh;
     }
-    const Bdd_Node new_node{Bdd_Node::Bdd_type::INTERNAL, (pivot_on_a ? a_var : b_var), nhigh, nlow};
-    return binop_memo[{a, b}] = get_id(new_node);
+    const Bdd_Node new_node{Bdd_Node::Bdd_type::INTERNAL,
+                            (pivot_on_a ? a_var : b_var), nhigh, nlow};
+    return binop_memo[{a, b, BinOpType::AND}] = get_id(new_node);
 }
 
 id_type Walker::rec_apply_or(id_type a, id_type b) {
@@ -204,12 +230,15 @@ id_type Walker::rec_apply_or(id_type a, id_type b) {
 
     // Base Cases
     if (node_a == node_b) return a;
-    if (node_a.type == Bdd_Node::Bdd_type::TRUE || node_b.type == Bdd_Node::Bdd_type::TRUE) {
+    if (node_a.type == Bdd_Node::Bdd_type::TRUE ||
+        node_b.type == Bdd_Node::Bdd_type::TRUE) {
         return 1;
     }
     if (node_a.type == Bdd_Node::Bdd_type::FALSE) return b;
     if (node_b.type == Bdd_Node::Bdd_type::FALSE) return a;
-    if (const auto mit = binop_memo.find(std::make_tuple(a, b));
+
+    // Use the memo with the OR operation type
+    if (const auto mit = binop_memo.find(std::make_tuple(a, b, BinOpType::OR));
         mit != binop_memo.end()) {
         return mit->second;
     }
@@ -233,10 +262,11 @@ id_type Walker::rec_apply_or(id_type a, id_type b) {
         nlow = rec_apply_or(a, node_b.low);
     }
     if (nhigh == nlow) {
-        return binop_memo[{a, b}] = nhigh;
+        return binop_memo[{a, b, BinOpType::OR}] = nhigh;
     }
-    const Bdd_Node new_node{Bdd_Node::Bdd_type::INTERNAL, (pivot_on_a ? a_var : b_var), nhigh, nlow};
-    return binop_memo[{a, b}] = get_id(new_node);
+    const Bdd_Node new_node{Bdd_Node::Bdd_type::INTERNAL,
+                            (pivot_on_a ? a_var : b_var), nhigh, nlow};
+    return binop_memo[{a, b, BinOpType::OR}] = get_id(new_node);
 }
 
 id_type Walker::rec_apply_not(const id_type a) {
@@ -245,7 +275,7 @@ id_type Walker::rec_apply_not(const id_type a) {
     // Base Cases
     if (node.type == Bdd_Node::Bdd_type::FALSE) return 1;
     if (node.type == Bdd_Node::Bdd_type::TRUE) return 0;
-    if (const auto mit = unary_memo.find(a); mit != unary_memo.end()) {
+    if (const auto mit = not_memo.find(a); mit != not_memo.end()) {
         return mit->second;
     }
 
@@ -253,6 +283,7 @@ id_type Walker::rec_apply_not(const id_type a) {
     const id_type left = rec_apply_not(node.high);
     const id_type right = rec_apply_not(node.low);
 
-    const Bdd_Node new_node{Bdd_Node::Bdd_type::INTERNAL, node.var, left, right};
-    return unary_memo[a] = get_id(new_node);
+    const Bdd_Node new_node{Bdd_Node::Bdd_type::INTERNAL, node.var, left,
+                            right};
+    return not_memo[a] = get_id(new_node);
 }

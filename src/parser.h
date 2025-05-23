@@ -32,29 +32,28 @@ func_call_stmt parse_func_call(const_span& sp);
 expr_stmt parse_expr_stmt(const_span& sp);
 
 // Parses an Expression
-std::unique_ptr<expr> parse_expr(const_span& sp);
+std::shared_ptr<expr> parse_expr(const_span& sp);
 
 // Parses an Implication Expression
-std::unique_ptr<expr> parse_implication(const_span& sp);
+std::shared_ptr<expr> parse_implication(const_span& sp);
 
 // Parses a Disjunction Expression
-std::unique_ptr<expr> parse_disjunct(const_span& sp);
+std::shared_ptr<expr> parse_disjunct(const_span& sp);
 
 // Parses a Conjunct Expression
-std::unique_ptr<expr> parse_conjunct(const_span& sp);
+std::shared_ptr<expr> parse_conjunct(const_span& sp);
 
 // Prases a Quantifier Expression
-std::unique_ptr<expr> parse_quantifier(const_span& sp);
+std::shared_ptr<expr> parse_quantifier(const_span& sp);
 
 // Parses a Unary Expression
-std::unique_ptr<expr> parse_unary(const_span& sp);
+std::shared_ptr<expr> parse_unary(const_span& sp);
 
 // Parses a Primary Expression
-std::unique_ptr<expr> parse_primary(const_span& sp);
+std::shared_ptr<expr> parse_primary(const_span& sp);
 
 // Parses an Identifier
-std::unique_ptr<identifier> parse_ident(const_span& sp);
+std::shared_ptr<identifier> parse_ident(const_span& sp);
 
 // Parses a Literal
-std::unique_ptr<literal> parse_literal(const_span& sp);
-
+std::shared_ptr<literal> parse_literal(const_span& sp);

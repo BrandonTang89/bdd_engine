@@ -1,22 +1,23 @@
 #include "ast.h"
 
-std::unique_ptr<expr> clone_expr(const std::unique_ptr<expr>& expression) {
+[[maybe_unused]] std::shared_ptr<expr> clone_expr(
+    const std::shared_ptr<expr>& expression) {
     return std::visit(
-        []<typename T0>(const T0& e) -> std::unique_ptr<expr> {
+        []<typename T0>(const T0& e) -> std::shared_ptr<expr> {
             using T = std::decay_t<T0>;
             if constexpr (std::is_same_v<T, bin_expr>) {
-                return std::make_unique<expr>(
+                return std::make_shared<expr>(
                     bin_expr{clone_expr(e.left), clone_expr(e.right), e.op});
             } else if constexpr (std::is_same_v<T, quantifier_expr>) {
-                return std::make_unique<expr>(quantifier_expr{
+                return std::make_shared<expr>(quantifier_expr{
                     e.quantifier, e.bound_vars, clone_expr(e.body)});
             } else if constexpr (std::is_same_v<T, unary_expr>) {
-                return std::make_unique<expr>(
+                return std::make_shared<expr>(
                     unary_expr{clone_expr(e.operand), e.op});
             } else if constexpr (std::is_same_v<T, literal>) {
-                return std::make_unique<expr>(literal{e.value});
+                return std::make_shared<expr>(literal{e.value});
             } else if constexpr (std::is_same_v<T, identifier>) {
-                return std::make_unique<expr>(identifier{e.name});
+                return std::make_shared<expr>(identifier{e.name});
             } else {
                 return nullptr;
             }

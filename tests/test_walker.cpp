@@ -83,8 +83,7 @@ TEST_CASE("Assignments and Usage") {
         interp.feed("set b = (x -> y) == (x -> y);");
         REQUIRE(interp.expr_tree_repr("b") == "TRUE");
 
-        interp.feed("set f = (x -> y) == (y -> z);");
-        REQUIRE(interp.expr_tree_repr("f") ==
+        REQUIRE(interp.expr_tree_repr("x -> y == y -> z") ==
                 "x ? (y ? (z ? (TRUE) : (FALSE)) : (FALSE)) : (y ? (z ? "
                 "(TRUE) : (FALSE)) : (TRUE))");
     }
@@ -97,8 +96,7 @@ TEST_CASE("Assignments and Usage") {
         interp.feed("set b = (x -> y) != (x -> y);");
         REQUIRE(interp.expr_tree_repr("b") == "FALSE");
 
-        interp.feed("set f = (x -> y) != (y -> z);");
-        REQUIRE(interp.expr_tree_repr("f") ==
+        REQUIRE(interp.expr_tree_repr("x -> y != y -> z") ==
                 "x ? (y ? (z ? (FALSE) : (TRUE)) : (TRUE)) : (y ? (z ? "
                 "(FALSE) : (TRUE)) : (FALSE))");
     }

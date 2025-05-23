@@ -7,16 +7,18 @@ for Propositional Formulae Manipulation.
 
 ## Todo
 
-*Generic Tasks*
-
-- Expand benchmarks
-
 *Meta Features*
 
-- Implement bank + garbage sweeping
+- Implement garbage sweeping
+  - Clear operator memo tables
+  - Clear unreachable BDD nodes
+- Cross-compilation to WASM
 
 *Language Features*
 
+- Using integer IDs as built-in variables for BDDs
+- Variable renaming in BDDs (which can result in reordering)
+  - Run-time BDD expressed back as a canonical AST
 - Implement evaluation for BDDs under assignments
 
 # Language
@@ -257,9 +259,9 @@ These operations are syntactic sugar on the above operations:
 - Equivalence: `P == Q` is equivalent to `(P & Q) | (!P & !Q)`
 - Inequality: `P != Q` is equivalent to `(P & !Q) | (!P & Q)`
 
-Note that this means that using equivalence and inequality can result in exponential blowup in the size of the abstract
-syntax tree. However, when we evaluate the expression, we will still only have 1 BDD node for each P and Q so this
-should not really be a problem in practice.
+Note that both the abstract syntax tree and run-time BDD representations use pointers that allow sharing across
+subformulae. Thus, the equivalence and inequality do not cause exponential blow-up in the size of the ASTs or number of
+BDDs.
 
 # Repository Layout
 
