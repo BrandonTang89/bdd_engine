@@ -219,27 +219,7 @@ BDD ID: 9
 y ? (FALSE) : (z ? (FALSE) : (TRUE))
 ```
 
-# Usage
 
-## REPL Usage
-
-The default way to use the application is as a REPL. The REPL will read a line of input, parse it and execute it. The
-REPL will print the result of the execution.
-
-To be able to use up and down arrow keys to use previous commands, use `rlwrap` to run the binary.
-
-```bash
-rlwrap ./bdd_engine
-```
-
-## Script Usage
-
-We can also pass a script file to the binary. The script file should be a valid script. The script file will be loaded
-into memory, scanned, parsed and executed.
-
-```bash
-./bdd_engine --source <script_file.bdd>
-```
 
 # Architecture
 
@@ -273,7 +253,10 @@ BDDs.
 The project is a tree-walk interpreter, so it has three internal parts:
 
 - A lexer
-    - `token.h` contains the token types and scanner interface
+    - `token.h` contains the token types
+    - `lexer.h/cpp` contains the lexer code
+      - Lexer has a custom exception class for handling errors
+      - Calls to `scan_to_tokens` returns either a list of tokens or a lexer error
 - A recursive descent parser
     - `parser.h` contains the parser interface
         - The parser has a custom parser exception class for handling errors
@@ -298,31 +281,43 @@ Uses CMake 3.31 and Conan 2.15.0, tested on GCC 14.
 
 Depends on `Abseil` and `Catch2`.
 
-The easiest way to configure and build is using the Conan extension in CLion.
+The easiest way to configure and build is using the Conan extension in CLion. 
 
+Otherwise:
 
-[//]: # (Set up the Conan profile by following instructions from [Conan]&#40;https://docs.conan.io/2/tutorial/consuming_packages/build_simple_cmake_project.html&#41;.)
-
-[//]: # ()
-
-[//]: # (```bash)
-
-[//]: # (conan install . --output-folder=build --build=missing)
-
-[//]: # (cmake --preset conan-release)
-
-[//]: # ()
-
-[//]: # (cd build)
-
-[//]: # (make -j 8)
-
-[//]: # (```)
+```bash
+mkdir cmake-build-release
+cd cmake-build-release
+cmake .. -G Ninja -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+```
 
 ## Unit Tests
 
 The tests are in written in the `tests` directory.
 
-After building the tests, we can run them using `make test` or (for more verbose output) `./tests`.
+After building the tests, we can run them using `./tests`.
 
 We can run benchmarks with `./tests "[!-benchmark]"` to get the benchmark results.
+
+##  Usage
+
+### REPL Usage
+
+The default way to use the application is as a REPL. The REPL will read a line of input, parse it and execute it. The
+REPL will print the result of the execution.
+
+To be able to use up and down arrow keys to use previous commands, use `rlwrap` to run the binary.
+
+```bash
+rlwrap ./bdd_engine
+```
+
+### Script Usage
+
+We can also pass a script file to the binary. The script file should be a valid script. The script file will be loaded
+into memory, scanned, parsed and executed.
+
+```bash
+./bdd_engine --source <script_file.bdd>
+```
