@@ -296,11 +296,9 @@ cmake --build .
 
 [//]: # (cd cmake-build-release)
 
-[//]: # (CXX=emcmake cmake .. -DCMAKE_TOOLCHAIN_FILE=/opt/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release -DCONAN_HOST_PROFILE=emscripten -DCONAN_BUILD_PROFILE=default)
+[//]: # (CXX=emcc emcmake cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release -DCONAN_HOST_PROFILE=emscripten -DCONAN_BUILD_PROFILE=default)
 
-[//]: # (#emcmake cmake --build .)
-
-[//]: # (make)
+[//]: # (CXX=emcc make)
 
 [//]: # (```)
 
