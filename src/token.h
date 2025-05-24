@@ -2,7 +2,7 @@
 #include <cassert>
 #include <cstdint>
 
-struct Token {
+struct token {
     enum class Type : std::uint8_t {
         // Single-character Tokens
         LEFT_PAREN,
@@ -45,7 +45,7 @@ struct Token {
     std::string lexeme;               // the text of the token
     std::optional<uint32_t> token_value{};  // optional value for number tokens
 
-    Token(const Type type, const std::string& lexeme,
+    token(const Type type, const std::string& lexeme,
           const std::optional<int> value = std::nullopt)
         : type(type), lexeme(lexeme), token_value(value) {
         assert(type != Type::ID || value.has_value());

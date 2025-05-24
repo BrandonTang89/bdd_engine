@@ -129,7 +129,7 @@ void Walker::walk_assign_stmt(const assign_stmt& statement) {
 
 void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
     switch (statement.func_name.type) {
-        case Token::Type::TREE_DISPLAY: {
+        case token::Type::TREE_DISPLAY: {
             LOG(INFO) << "Tree Display Function Called";
             if (statement.arguments.size() != 1) {
                 throw ExecutionException(
@@ -140,7 +140,7 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
             out << bdd_repr(bdd_id) << '\n';
             break;
         }
-        case Token::Type::GRAPH_DISPLAY: {
+        case token::Type::GRAPH_DISPLAY: {
             if (statement.arguments.size() != 1) {
                 throw ExecutionException(
                     "Invalid number of arguments for graph display", __func__);
@@ -151,7 +151,7 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
             out << gviz_rep << '\n';
             break;
         }
-        case Token::Type::IS_SAT: {
+        case token::Type::IS_SAT: {
             if (statement.arguments.size() != 1) {
                 throw ExecutionException(
                     "Invalid number of arguments for is_sat", __func__);
@@ -165,7 +165,7 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
             }
             break;
         }
-        case Token::Type::SOURCE: {
+        case token::Type::SOURCE: {
             if (statement.arguments.size() != 1) {
                 throw ExecutionException(
                     "Invalid number of arguments for source", __func__);

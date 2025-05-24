@@ -21,9 +21,9 @@ id_type Walker::construct_bdd(const expr& x) {
                 const id_type right_bdd = construct_bdd(*expression.right);
                 id_type combined_bdd = 0;
 
-                if (expression.op.type == Token::Type::LAND) {
+                if (expression.op.type == token::Type::LAND) {
                     combined_bdd = rec_apply_and(left_bdd, right_bdd);
-                } else if (expression.op.type == Token::Type::LOR) {
+                } else if (expression.op.type == token::Type::LOR) {
                     combined_bdd = rec_apply_or(left_bdd, right_bdd);
                 } else {
                     throw std::runtime_error("Unsupported binary operator" +
@@ -63,13 +63,13 @@ id_type Walker::construct_bdd(const expr& x) {
                 quantifier_memo.clear();
 
                 // Apply the quantifier
-                if (expression.quantifier.type == Token::Type::EXISTS) {
+                if (expression.quantifier.type == token::Type::EXISTS) {
                     return ret_id = rec_apply_quant(
                                body_bdd, bound_var_names,
                                [this](const id_type a, const id_type b) {
                                    return rec_apply_or(a, b);
                                });
-                } else if (expression.quantifier.type == Token::Type::FORALL) {
+                } else if (expression.quantifier.type == token::Type::FORALL) {
                     return ret_id = rec_apply_quant(
                                body_bdd, bound_var_names,
                                [this](const id_type a, const id_type b) {
@@ -82,7 +82,7 @@ id_type Walker::construct_bdd(const expr& x) {
             } else if constexpr (std::is_same_v<T, unary_expr>) {
                 // Handle unary expression
                 const id_type operand_bdd = construct_bdd(*expression.operand);
-                if (expression.op.type == Token::Type::BANG) {
+                if (expression.op.type == token::Type::BANG) {
                     return ret_id = rec_apply_not(operand_bdd);
                 } else {
                     throw std::runtime_error("Unsupported unary operator");
@@ -90,7 +90,7 @@ id_type Walker::construct_bdd(const expr& x) {
 
             } else if constexpr (std::is_same_v<T, literal>) {
                 // Handle literal
-                if (expression.value.type == Token::Type::ID) {
+                if (expression.value.type == token::Type::ID) {
                     if (id_to_iter.contains(*expression.value.token_value)) {
                         return ret_id = *expression.value.token_value;
                     } else {
@@ -98,9 +98,9 @@ id_type Walker::construct_bdd(const expr& x) {
                             "ID not found: " + expression.value.lexeme,
                             "Walker::construct_bdd");
                     }
-                } else if (expression.value.type == Token::Type::TRUE) {
+                } else if (expression.value.type == token::Type::TRUE) {
                     return ret_id = static_cast<id_type>(1);
-                } else if (expression.value.type == Token::Type::FALSE) {
+                } else if (expression.value.type == token::Type::FALSE) {
                     return ret_id = static_cast<id_type>(0);
                 } else {
                     throw std::runtime_error("Unsupported literal type");

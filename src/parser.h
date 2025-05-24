@@ -8,13 +8,13 @@
 #include "engine_exceptions.h"
 
 // Type alias for a constant iterator over expressions
-using const_iter = std::vector<Token>::const_iterator;
-using const_span = std::span<const Token>;
+using const_iter = std::vector<token>::const_iterator;
+using const_span = std::span<const token>;
 
 // Parses a vector of expressions into an Abstract Syntax Tree (AST)
 using parse_result_t =
     std::expected<std::vector<stmt>, std::vector<ParserException>>;
-parse_result_t parse(const std::vector<Token>& tokens);
+parse_result_t parse(const std::vector<token>& tokens);
 
 // Parses a single statement
 stmt parse_statement(const_span& sp);

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSharedSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=&quot;conan_provider.cmake&quot;" />
+      <configuration PROFILE_NAME="Release" ENABLED="true" CONFIG_NAME="Release" GENERATION_OPTIONS="-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=&quot;conan_provider.cmake&quot;" />
+      <configuration PROFILE_NAME="ReleaseNodeJs" ENABLED="true" CONFIG_NAME="Release" GENERATION_OPTIONS="-G &quot;Unix Makefiles&quot; -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=conan_provider.cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=/opt/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCONAN_HOST_PROFILE:STRING=emscripten -D_cmake_program:FILEPATH=/usr/local/bin/cmake" />
+    </configurations>
+  </component>
+</project>

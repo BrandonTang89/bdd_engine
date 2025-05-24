@@ -2,7 +2,8 @@
 
 #include <format>
 #include <source_location>
-#include "Token.h"
+
+#include "token.h"
 
 // Lexer Exception Type
 class LexerException final : public std::exception {
@@ -30,7 +31,7 @@ class LexerException final : public std::exception {
 // Parser Exception Type
 class ParserException final : public std::exception {
     std::string message;
-    Token next_token;
+    token next_token;
     std::string function_name;
     std::source_location location;
 
@@ -38,7 +39,7 @@ class ParserException final : public std::exception {
 
    public:
     ParserException(
-        const std::string& msg, const Token& nxt_token,
+        const std::string& msg, const token& nxt_token,
         const std::string_view fn_name,
         const std::source_location& loc = std::source_location::current())
         : message(msg),

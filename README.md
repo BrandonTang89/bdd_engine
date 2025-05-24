@@ -268,16 +268,16 @@ The project is a tree-walk interpreter, so it has three internal parts:
     - `walker_bdd_view.cpp` implements queries about the BDDs, such as satisfiability and display functions
 
 The REPL and overall application are implemented by the following
-
+- `config.h` contains the configuration such as whether to enable colour output.
+- `colours.h` contains the colour codes for terminal output
 - `main.cpp` contains the main function
-- `repl.h` contains the REPL interface
-- `repl.cpp` implements the REPL interface
+- `repl.h/cpp` contains the REPL interface/implementation
 
 # Building and Dependencies
 
-Uses CMake 3.31 and Conan 2.15.0, tested on GCC 14.
+Uses [CMake](https://cmake.org/) 3.31 and [Conan](https://conan.io/) 2.15.0, tested on [GCC](https://gcc.gnu.org/) 14.
 
-Depends on `Abseil` and `Catch2`.
+Depends on [Abseil](https://github.com/abseil/abseil-cpp) and [Catch2](https://github.com/catchorg/Catch2).
 
 The easiest way to configure and build is using the Conan extension in CLion.
 
@@ -290,32 +290,6 @@ cmake .. -G Ninja -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCM
 cmake --build .
 ```
 
-## Cross Compilation to WASM (Work in Progress)
-https://github.com/cryptool-org/wasm-webterm
-https://github.com/emscripten-core/emscripten/pull/23171
-https://webassembly.sh/
-
-Emscripten profile
-```text
-[settings]
-os=Emscripten
-arch=wasm
-compiler=clang
-compiler.version=19
-compiler.libcxx=libc++
-build_type=Release
-compiler.cppstd=23
-
-[tool_requires]
-emsdk/3.1.73
-```
-
-```bash
-mkdir cmake-build-release
-cd cmake-build-release
-emcmake cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release -DCONAN_HOST_PROFILE=emscripten -DCONAN_BUILD_PROFILE=default
-make -j 14
-```
 ## Unit Tests
 
 The tests are in written in the `tests` directory.
@@ -345,3 +319,43 @@ into memory, scanned, parsed and executed.
 ```bash
 ./bdd_engine --source <script_file.bdd>
 ```
+
+## Cross-Compilation to WASM
+
+We can cross-compile the project to WebAssembly using [Emscripten](https://emscripten.org/).
+
+First, we need to [install Emscripten](https://emscripten.org/docs/getting_started/downloads.html).
+
+Then we need to set up the following [Conan2 profile](https://docs.conan.io/2/reference/config_files/profiles.html), named `emscripten`:
+
+```text
+[settings]
+os=Emscripten
+arch=wasm
+compiler=clang
+compiler.version=19
+compiler.libcxx=libc++
+build_type=Release
+compiler.cppstd=23
+
+[tool_requires]
+emsdk/3.1.73
+```
+
+```bash
+mkdir cmake-build-release
+cd cmake-build-release
+emcmake cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release -DCONAN_HOST_PROFILE=emscripten -DCONAN_BUILD_PROFILE=default
+make -j 14
+```
+
+### Node.js
+The default emscripten build will produce a `bdd_engine.js` file and a `bdd_engine.wasm` file that works for [Node.js](https://nodejs.org/en) using the `sNODERAWFS` option. Both need to be in the same directory when running.
+
+Running `node bdd_engine.js` will start the REPL in Node.js and has the exact same functionality as the native REPL.
+
+### To do: Web GUI
+
+* https://github.com/cryptool-org/wasm-webterm
+* https://github.com/emscripten-core/emscripten/pull/23171
+* https://webassembly.sh/

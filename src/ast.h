@@ -16,26 +16,26 @@ using expr =
 struct bin_expr {
     std::shared_ptr<expr> left;
     std::shared_ptr<expr> right;
-    Token op;
+    token op;
 };
 
 struct quantifier_expr {
-    Token quantifier;
-    std::vector<Token> bound_vars;
+    token quantifier;
+    std::vector<token> bound_vars;
     std::shared_ptr<expr> body;
 };
 
 struct unary_expr {
     std::shared_ptr<expr> operand;
-    Token op;
+    token op;
 };
 
 struct literal {
-    Token value;
+    token value;
 };
 
 struct identifier {
-    Token name;
+    token name;
 };
 
 // Statements
@@ -50,12 +50,12 @@ struct expr_stmt {
 };
 
 struct func_call_stmt {
-    Token func_name;
+    token func_name;
     std::vector<std::shared_ptr<expr>> arguments;
 };
 
 struct decl_stmt {
-    std::vector<Token> identifiers;
+    std::vector<token> identifiers;
 };
 
 struct assign_stmt {
