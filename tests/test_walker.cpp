@@ -298,12 +298,12 @@ TEST_CASE("Using IDs as Expressions") {
         auto out = interp.get_output();
         std::vector<std::string> numbers =
             absl::StrSplit(out, ' ', [](absl::string_view s) {
-                int number;
+                int number = 0;
                 return absl::SimpleAtoi(s, &number);
             });
         REQUIRE(numbers.size() > 0);
         int id = 0;
-        absl::SimpleAtoi(numbers[0], &id);
+        [[maybe_unused]] bool success = absl::SimpleAtoi(numbers[0], &id);
 
         REQUIRE(interp.expr_tree_repr(std::format("z & {};", id)) ==
                 "x ? (y ? (z ? (TRUE) : (FALSE)) : (FALSE)) : (FALSE)");

@@ -2,10 +2,10 @@
 
 #include <expected>
 #include <vector>
+#include <span>
 
 #include "ast.h"
 #include "engine_exceptions.h"
-#include "lexer.h"
 
 // Type alias for a constant iterator over expressions
 using const_iter = std::vector<Token>::const_iterator;

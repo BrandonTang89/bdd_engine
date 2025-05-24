@@ -290,18 +290,32 @@ cmake .. -G Ninja -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCM
 cmake --build .
 ```
 
-[//]: # (```bash)
+## Cross Compilation to WASM (Work in Progress)
+https://github.com/cryptool-org/wasm-webterm
+https://github.com/emscripten-core/emscripten/pull/23171
+https://webassembly.sh/
 
-[//]: # (mkdir cmake-build-release)
+Emscripten profile
+```text
+[settings]
+os=Emscripten
+arch=wasm
+compiler=clang
+compiler.version=19
+compiler.libcxx=libc++
+build_type=Release
+compiler.cppstd=23
 
-[//]: # (cd cmake-build-release)
+[tool_requires]
+emsdk/3.1.73
+```
 
-[//]: # (CXX=emcc emcmake cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release -DCONAN_HOST_PROFILE=emscripten -DCONAN_BUILD_PROFILE=default)
-
-[//]: # (CXX=emcc make)
-
-[//]: # (```)
-
+```bash
+mkdir cmake-build-release
+cd cmake-build-release
+emcmake cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release -DCONAN_HOST_PROFILE=emscripten -DCONAN_BUILD_PROFILE=default
+make -j 14
+```
 ## Unit Tests
 
 The tests are in written in the `tests` directory.

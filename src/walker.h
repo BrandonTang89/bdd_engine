@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <sstream>
 
 #include "absl/hash/hash.h"
 #include "ast.h"
