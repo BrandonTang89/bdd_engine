@@ -12,7 +12,6 @@ for Propositional Formulae Manipulation.
 - Implement garbage sweeping
     - Clear operator memo tables
     - Clear unreachable BDD nodes
-- Cross-compilation to WASM
 
 *Language Features*
 
@@ -355,7 +354,7 @@ The default emscripten build will produce a `bdd_engine.js` file and a `bdd_engi
 Running `node bdd_engine.js` will start the REPL in Node.js and has the exact same functionality as the native REPL.
 
 ### To do: Web GUI
-
+Eventually we can try to make a Web GUI for the project. 
 * https://github.com/cryptool-org/wasm-webterm
 * https://github.com/emscripten-core/emscripten/pull/23171
 * https://webassembly.sh/
