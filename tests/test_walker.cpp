@@ -105,6 +105,84 @@ TEST_CASE("Assignments and Usage") {
     }
 }
 
+TEST_CASE("Constructing Expressions with Substitutions") {
+    InterpTester interp;
+    interp.feed("bvar x y z w;");
+
+    SECTION("Basic Substitutions") {
+        // Simple variable substitution
+        REQUIRE(interp.expr_tree_repr("sub {x: y} x") ==
+                "y ? (TRUE) : (FALSE)");
+
+        // Multiple substitutions
+        REQUIRE(interp.expr_tree_repr("sub {x: y, y: z} (x & y)") ==
+                "y ? (z ? (TRUE) : (FALSE)) : (FALSE)");
+
+        // Constants in substitution
+        REQUIRE(interp.expr_tree_repr("sub {x: true, y: false} (x & y)") ==
+                "FALSE");
+    }
+
+    SECTION("Duplicate Substitutions") {
+        // Last substitution takes precedence
+        REQUIRE(interp.expr_tree_repr("sub {x: y, x: z} x") ==
+                "z ? (TRUE) : (FALSE)");
+
+        // Complex expressions with duplicates
+        // All the substitutions apply simultaneously
+        REQUIRE(interp.expr_tree_repr("sub {x: y & z, x: z | w} (x & y)") ==
+                "y ? (z ? (TRUE) : (w ? (TRUE) : (FALSE))) : (FALSE)");
+    }
+
+    SECTION("Nested Substitutions in Lists") {
+        // Nested in substitution list
+        REQUIRE(interp.expr_tree_repr("sub {x: sub {y: z} (y & w)} x") ==
+                "z ? (w ? (TRUE) : (FALSE)) : (FALSE)");
+
+        // Multiple nested substitutions
+        REQUIRE(interp.expr_tree_repr(
+                    "sub {x: sub {y: z} y, y: sub {z: w} z} (x & y)") ==
+                "z ? (w ? (TRUE) : (FALSE)) : (FALSE)");
+    }
+
+    SECTION("Nested Substitutions in Body") {
+        // Substitution in the target expression
+        REQUIRE(interp.expr_tree_repr("sub {x: y} (sub {y: z} x)") ==
+                "y ? (TRUE) : (FALSE)");
+
+        // Complex nested case
+        REQUIRE(interp.expr_tree_repr("sub {y: w} (sub {x: y} (x & z))") ==
+                "z ? (w ? (TRUE) : (FALSE)) : (FALSE)");
+    }
+
+    SECTION("Nested Substitutions in Both") {
+        // Substitutions in both places
+        REQUIRE(interp.expr_tree_repr("sub {x: sub {y: w} y} (sub {z: x} z)") ==
+                "w ? (TRUE) : (FALSE)");
+
+        // Complex nested case in both
+        REQUIRE(interp.expr_tree_repr(
+                    "sub {x: sub {y: w} (y & z)} (sub {w: x} (w | y))") ==
+                "y ? (TRUE) : (z ? (w ? (TRUE) : (FALSE)) : (FALSE))");
+    }
+
+    SECTION("Substituting Multiple Variables") {
+        // Multiple substitutions at once
+        REQUIRE(interp.expr_tree_repr("sub {x: y, y: z, z: w} (x & y & z)") ==
+                "y ? (z ? (w ? (TRUE) : (FALSE)) : (FALSE)) : (FALSE)");
+    }
+
+    SECTION("Substituting Constants") {
+        // Substituting with constants
+        REQUIRE(interp.expr_tree_repr("sub {x: true, y: false} (x -> y)") ==
+                "FALSE");
+
+        // Mixed constants and variables
+        REQUIRE(interp.expr_tree_repr("sub {x: true, y: z} (x & y)") ==
+                "z ? (TRUE) : (FALSE)");
+    }
+}
+
 TEST_CASE("Constructing Expression with Quantifiers") {
     InterpTester interp;
     interp.feed("bvar x y z w;");

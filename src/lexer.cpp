@@ -13,6 +13,7 @@ const std::unordered_map<std::string, token::Type> keyword_map = {
     {"source", token::Type::SOURCE},
     {"exists", token::Type::EXISTS},
     {"forall", token::Type::FORALL},
+    {"sub", token::Type::SUBSTITUTE},
 };
 
 constexpr bool is_lexeme_char(const char c) {
@@ -31,6 +32,12 @@ lex_result_t scan_to_tokens(const std::string& source) {
             case ')':
                 tokens.emplace_back(token::Type::RIGHT_PAREN, ")");
                 break;
+            case '{':
+                tokens.emplace_back(token::Type::LEFT_BRACE, "{");
+                break;
+            case '}':
+                tokens.emplace_back(token::Type::RIGHT_BRACE, "}");
+                break;
             case '&':
                 tokens.emplace_back(token::Type::LAND, "&");
                 break;
@@ -39,6 +46,9 @@ lex_result_t scan_to_tokens(const std::string& source) {
                 break;
             case ';':
                 tokens.emplace_back(token::Type::SEMICOLON, ";");
+                break;
+            case ':':
+                tokens.emplace_back(token::Type::COLON, ":");
                 break;
             case ',':
                 tokens.emplace_back(token::Type::COMMA, ",");
@@ -94,8 +104,8 @@ lex_result_t scan_to_tokens(const std::string& source) {
                         number = number * 10 + (c - '0');
                         c = source[++i];
                     }
-                    tokens.emplace_back(token::Type::ID,
-                                        std::to_string(number), number);
+                    tokens.emplace_back(token::Type::ID, std::to_string(number),
+                                        number);
                 } else {
                     return std::unexpected<LexerException>(LexerException(
                         "Unexpected character: " + std::string(1, c),

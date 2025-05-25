@@ -7,9 +7,12 @@ struct token {
         // Single-character Tokens
         LEFT_PAREN,
         RIGHT_PAREN,
+        LEFT_BRACE,
+        RIGHT_BRACE,
         LAND,
         LOR,
         SEMICOLON,
+        COLON,
         COMMA,
 
         // Single or Double Character Tokens
@@ -30,6 +33,9 @@ struct token {
         TRUE,
         FALSE,
 
+        // Special Keywords
+        SUBSTITUTE,
+
         // Special Keywords for functions
         TREE_DISPLAY,
         GRAPH_DISPLAY,
@@ -39,6 +45,7 @@ struct token {
         // Special Keywords for quantifiers
         EXISTS,
         FORALL,
+
     };
 
     Type type;

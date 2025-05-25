@@ -1,35 +1,20 @@
 #include "ast.h"
 
-[[maybe_unused]] std::shared_ptr<expr> clone_expr(
-    const std::shared_ptr<expr>& expression) {
-    return std::visit(
-        []<typename T0>(const T0& e) -> std::shared_ptr<expr> {
-            using T = std::decay_t<T0>;
-            if constexpr (std::is_same_v<T, bin_expr>) {
-                return std::make_shared<expr>(
-                    bin_expr{clone_expr(e.left), clone_expr(e.right), e.op});
-            } else if constexpr (std::is_same_v<T, quantifier_expr>) {
-                return std::make_shared<expr>(quantifier_expr{
-                    e.quantifier, e.bound_vars, clone_expr(e.body)});
-            } else if constexpr (std::is_same_v<T, unary_expr>) {
-                return std::make_shared<expr>(
-                    unary_expr{clone_expr(e.operand), e.op});
-            } else if constexpr (std::is_same_v<T, literal>) {
-                return std::make_shared<expr>(literal{e.value});
-            } else if constexpr (std::is_same_v<T, identifier>) {
-                return std::make_shared<expr>(identifier{e.name});
-            } else {
-                return nullptr;
-            }
-        },
-        *expression);
-}
-
 std::string expr_repr(const expr& expression) {
     return std::visit(
         []<typename T0>(const T0& e) -> std::string {
-            using T = std::decay_t<T0>;
-            if constexpr (std::is_same_v<T, bin_expr>) {
+            using T = std::remove_cvref_t<T0>;
+            if constexpr (std::is_same_v<T, sub_expr>) {
+                std::string result = "SubExpr(";
+                for (const auto& [key, value] : e.substitutions) {
+                    result += key + " -> " + expr_repr(*value) + ", ";
+                }
+                result.pop_back();  // Remove last space
+                result.pop_back();  // Remove last comma
+                result += ", " + expr_repr(*e.body) + ")";
+                return result;
+
+            } else if constexpr (std::is_same_v<T, bin_expr>) {
                 return "BinExpr(" + expr_repr(*e.left) + ", " + e.op.lexeme +
                        ", " + expr_repr(*e.right) + ")";
 

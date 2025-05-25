@@ -34,6 +34,12 @@ expr_stmt parse_expr_stmt(const_span& sp);
 // Parses an Expression
 std::shared_ptr<expr> parse_expr(const_span& sp);
 
+// Parses an Expression
+std::shared_ptr<expr> parse_substitute(const_span& sp);
+
+// Parses an Equality Expression
+std::shared_ptr<expr> parse_equality(const_span& sp);
+
 // Parses an Implication Expression
 std::shared_ptr<expr> parse_implication(const_span& sp);
 

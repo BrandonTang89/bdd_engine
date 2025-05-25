@@ -15,8 +15,18 @@ id_type Walker::construct_bdd(const expr& x) {
     id_type ret_id{};
     std::visit(
         [&ret_id, this]<typename T0>(const T0& expression) {
-            using T = std::decay_t<T0>;
-            if constexpr (std::is_same_v<T, bin_expr>) {
+            using T = std::remove_cvref_t<T0>;
+
+            if constexpr (std::is_same_v<T, sub_expr>) {
+                // Handle substitution expression
+                substitution_map sub_map = expression.substitutions;
+                auto body_bdd = construct_bdd(*expression.body);
+                auto reconstructed_expr = construct_expr(body_bdd);
+                auto substituted_expr =
+                    substitute_expr(*reconstructed_expr, sub_map);
+                auto subbed_body = construct_bdd(*substituted_expr);
+                return ret_id = subbed_body;
+            } else if constexpr (std::is_same_v<T, bin_expr>) {
                 const id_type left_bdd = construct_bdd(*expression.left);
                 const id_type right_bdd = construct_bdd(*expression.right);
                 id_type combined_bdd = 0;
@@ -122,13 +132,13 @@ id_type Walker::construct_bdd(const expr& x) {
                                             globals[expression.name.lexeme])
                                             .id;
                     }
-                } else {
-                    throw ExecutionException(
-                        "Variable not found: " + expression.name.lexeme,
-                        "Walker::construct_bdd");
                 }
+
+                throw ExecutionException(
+                    "Variable not found: " + expression.name.lexeme,
+                    "Walker::construct_bdd");
             } else {
-                return static_cast<id_type>(1);
+                throw std::runtime_error("Unsupported expression type");
             }
         },
         x);

@@ -36,6 +36,44 @@ TEST_CASE("Invalid Declaration") {
         REQUIRE(absl::StrContains(error, "ParserException"));
     }
 
+    SECTION("Missing Parts of Substitution") {
+        std::string input = R"(
+            bvar x y z;
+            sub {x: y};
+        )";
+        parser_tester.feed(input);
+        std::string error = parser_tester.get_parser_error();
+        REQUIRE(absl::StrContains(error, "ParserException"));
+
+        input = R"(
+            sub {x: y, y:};
+        )";
+        parser_tester.feed(input);
+        error = parser_tester.get_parser_error();
+        REQUIRE(absl::StrContains(error, "ParserException"));
+
+        input = R"(
+            sub x;
+        )";
+        parser_tester.feed(input);
+        error = parser_tester.get_parser_error();
+        REQUIRE(absl::StrContains(error, "ParserException"));
+
+        input = R"(
+            sub {: x;
+        )";
+        parser_tester.feed(input);
+        error = parser_tester.get_parser_error();
+        REQUIRE(absl::StrContains(error, "ParserException"));
+
+        input = R"(
+            sub {y x} y;
+        )";
+        parser_tester.feed(input);
+        error = parser_tester.get_parser_error();
+        REQUIRE(absl::StrContains(error, "ParserException"));
+    }
+
     SECTION("Assignment without =") {
         std::string input = R"(
             set a true;

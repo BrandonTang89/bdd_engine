@@ -31,6 +31,7 @@ std::string Walker::get_output() {
 void Walker::walk_statements(const std::span<stmt>& statements) {
     for (const auto& statement : statements) {
         try {
+            if constexpr (print_ast) LOG(WARNING) << stmt_repr(statement);
             walk_raw(statement);
         } catch (const ExecutionException& e) {
             if constexpr (use_colours) set_colour(out, Colour::RED);

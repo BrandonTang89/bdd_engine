@@ -70,6 +70,7 @@ add_executable(${PROJECT_NAME}
         src/walker_bdd_view.cpp
         src/walker_bdd_manip.cpp
         src/token.h
+        src/walker_bdd_substitute.cpp
 )
 target_link_libraries(${PROJECT_NAME} abseil::abseil)
 
@@ -88,6 +89,7 @@ add_executable(tests
         src/walker_bdd_manip.cpp
         src/token.h
         tests/test_lexer.cpp
+        src/walker_bdd_substitute.cpp
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain abseil::abseil)
 add_test(NAME bdd_engine_tests COMMAND tests)

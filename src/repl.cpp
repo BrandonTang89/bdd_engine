@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "absl/log/log.h"
+#include "absl/strings/ascii.h"
 #include "colours.h"
 #include "config.h"
 #include "lexer.h"
@@ -55,6 +56,8 @@ void evaluate(const std::string& user_input, Walker& walker) {
             std::string line;
             std::getline(std::cin, line);
             input += line;
+            // Strip leading/trailing whitespace
+            input = absl::StripAsciiWhitespace(input);
         }
 
         evaluate(input, walker);

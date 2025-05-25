@@ -1,7 +1,7 @@
 #pragma once
+#include <sstream>
 #include <string>
 #include <unordered_map>
-#include <sstream>
 
 #include "absl/hash/hash.h"
 #include "ast.h"
@@ -55,7 +55,6 @@ using node_id_map = std::unordered_map<Bdd_Node, id_type, absl::Hash<Bdd_Node>>;
 using iter_type = node_id_map::iterator;
 using id_iter_map =
     std::unordered_map<id_type, iter_type>;  // human_ids -> iter
-
 class Walker {
     // An instance of the tree-walk interpreter
     // Manages the environment of the interpreter and available BDDs in the
@@ -115,6 +114,19 @@ class Walker {
     std::string bdd_gviz_repr(id_type id);
 
     void clear_memos();
+
+    // Convert BDDs back to Expressions for Substitution
+    std::shared_ptr<expr> false_expr{
+        std::make_shared<expr>(literal{token{token::Type::FALSE, "false"}})};
+    std::shared_ptr<expr> true_expr{
+        std::make_shared<expr>(literal{token{token::Type::TRUE, "true"}})};
+
+    std::shared_ptr<expr> construct_expr(
+        id_type id);  // construct expr from bdd id
+
+    std::shared_ptr<expr> substitute_expr(
+        const expr& x,
+        const substitution_map& sub_map);  // substitute variables in expr
 
    public:
     Walker();

@@ -12,12 +12,7 @@ for Propositional Formulae Manipulation.
 - Implement garbage sweeping
     - Clear operator memo tables
     - Clear unreachable BDD nodes
-
-*Language Features*
-
-- BDD Substitutions
-    - I.e. replacing all occurrences of a variable with another BDD
-    - Can be used for both renaming and evaluating under an assignment
+- Web GUI using WASM
 
 # Language
 
@@ -44,6 +39,10 @@ function_name
     | "source"
 
 expression:
+    | "sub" "{" (IDENTIFIER ":" expression ("," IDENTIFIER ":" expression)*)? "}" expression
+    | equality
+    
+equality:
     | implication
     | implication "==" implication
     | implication "!=" implication
@@ -91,6 +90,15 @@ be printed to the console.
 During execution, if any statement is invalid, the execution will stop and the error will be printed to the console. The
 execution will not continue after the error.
 
+### Statements
+
+A statement is either
+
+- a BDD variable declaration
+- an assignment
+- a function call
+- an expression statement
+
 ### Symbolic Variable Declaration
 
 We declare symbolic variables using the `bvar` keyword.
@@ -103,17 +111,6 @@ This will create two symbolic variables `x` and `y`.
 
 The order in which symbolic variables are declared is important as this is their order within the BDDs.
 
-### Expressions
-
-All expressions are evaluated to form BDDs. An expression is either a conjunction, disjunction or negation of other
-expressions, or a primary expression. A primary expression is either
-
-- a parenthesised expression
-- a symbolic variable (declared with `bvar`)
-- an identifier (declared with `set`)
-- a boolean constant (`true` or `false`)
-- an integer ID that corresponds to some BDD node
-
 ### Assignments
 
 We can assign BDDs to any non-symbolic variables using the `set` keyword.
@@ -122,14 +119,6 @@ We can assign BDDs to any non-symbolic variables using the `set` keyword.
 set a = x & y;
 set b = !x | y;
 set c = a & b;
-```
-
-### Expression Statements
-
-Writing just an expression will display the id of the BDD node that an expression corresponds to.
-
-```
-a;
 ```
 
 ### Built-in Functions
@@ -182,6 +171,50 @@ The filename should only consist of the following characters:
 - Underscore (`_`)
 - Dot (`.`)
 
+### Expression Statements
+
+An expression statement is simply an expression that is evaluated.
+
+he ID of the BDD node that represents the expression is printed to the console.
+
+### Expressions
+
+All expressions are evaluated to form BDDs. An expression is either
+
+- a substitution
+- an equality or inequality
+- an implication
+- a disjunction
+- a conjunction
+- a quantification
+- a negation
+
+of other expressions, or a primary expression.
+
+A primary expression is either
+
+- a parenthesised expression
+- a symbolic variable (declared with `bvar`)
+- an identifier (declared with `set`)
+- a boolean constant (`true` or `false`)
+- an integer ID that corresponds to some BDD node
+-
+
+### Substitutions
+
+A substitution is used to replace variables in an expression with other expressions. It is written as:
+
+```
+sub {<var1>: <expr1>, <var2>: <expr1>, ...} <expression>
+```
+
+Note the following:
+
+- If there are multiple duplicate variables in the substitution, the rightmost one is used
+- If a variable is not in the substitution, it is left unchanged
+- Variables are substituted simultaneously, i.e. a variable introduced by a substitution will not be substituted
+  again by another substitution in the same statement
+
 ## Example Interaction
 
 ```
@@ -216,6 +249,11 @@ digraph G {
 >> display_tree (exists x b); 
 BDD ID: 9
 y ? (FALSE) : (z ? (FALSE) : (TRUE))
+>> sub {y: x, z: y} 9;
+BDD ID: 15
+>> display_tree 15;
+BDD ID: 15
+x ? (FALSE) : (y ? (FALSE) : (TRUE))
 ```
 
 # Architecture
@@ -267,6 +305,7 @@ The project is a tree-walk interpreter, so it has three internal parts:
     - `walker_bdd_view.cpp` implements queries about the BDDs, such as satisfiability and display functions
 
 The REPL and overall application are implemented by the following
+
 - `config.h` contains the configuration such as whether to enable colour output.
 - `colours.h` contains the colour codes for terminal output
 - `main.cpp` contains the main function
@@ -325,7 +364,8 @@ We can cross-compile the project to WebAssembly using [Emscripten](https://emscr
 
 First, we need to [install Emscripten](https://emscripten.org/docs/getting_started/downloads.html).
 
-Then we need to set up the following [Conan2 profile](https://docs.conan.io/2/reference/config_files/profiles.html), named `emscripten`:
+Then we need to set up the following [Conan2 profile](https://docs.conan.io/2/reference/config_files/profiles.html),
+named `emscripten`:
 
 ```text
 [settings]
@@ -342,19 +382,21 @@ emsdk/3.1.73
 ```
 
 ```bash
-mkdir cmake-build-release
-cd cmake-build-release
+mkdir cmake-build-releasenodejs
+cd cmake-build-releasenodejs
 emcmake cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release -DCONAN_HOST_PROFILE=emscripten -DCONAN_BUILD_PROFILE=default
 make -j 14
 ```
 
 ### Node.js
-The default emscripten build will produce a `bdd_engine.js` file and a `bdd_engine.wasm` file that works for [Node.js](https://nodejs.org/en) using the `sNODERAWFS` option. Both need to be in the same directory when running.
+
+The default emscripten build will produce a `bdd_engine.js` file and a `bdd_engine.wasm` file that works
+for [Node.js](https://nodejs.org/en) using the `sNODERAWFS` option. Both need to be in the same directory when running.
 
 Running `node bdd_engine.js` will start the REPL in Node.js and has the exact same functionality as the native REPL.
 
 ### To do: Web GUI
-Eventually we can try to make a Web GUI for the project. 
+
 * https://github.com/cryptool-org/wasm-webterm
 * https://github.com/emscripten-core/emscripten/pull/23171
 * https://webassembly.sh/

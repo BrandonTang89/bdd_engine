@@ -1,18 +1,28 @@
 #pragma once
 #include <memory>
+#include <unordered_map>
 #include <variant>
 
 #include "lexer.h"
+#include "token.h"
 
 // Expressions
+struct sub_expr;
 struct bin_expr;
 struct unary_expr;
 struct literal;
 struct identifier;
 struct quantifier_expr;
 
-using expr =
-    std::variant<bin_expr, quantifier_expr, unary_expr, literal, identifier>;
+using expr = std::variant<sub_expr, bin_expr, quantifier_expr, unary_expr,
+                          literal, identifier>;
+
+using substitution_map = std::unordered_map<std::string, std::shared_ptr<expr>>;
+struct sub_expr {
+    substitution_map substitutions;
+    std::shared_ptr<expr> body;
+};
+
 struct bin_expr {
     std::shared_ptr<expr> left;
     std::shared_ptr<expr> right;

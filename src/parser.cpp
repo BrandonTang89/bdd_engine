@@ -124,61 +124,106 @@ expr_stmt parse_expr_stmt(const_span& sp) {
     return expr;
 }
 
-// Handle the equivalence (==) and XOR (!=) operations
 std::shared_ptr<expr> parse_expr(const_span& sp) {
+    return parse_substitute(sp);
+}
+
+std::shared_ptr<expr> parse_substitute(const_span& sp) {
+    // 'sub' '{' (IDENTIFIER ':' expr (',' IDENTIFIER ':' expr)*)? '}' expr
+    if (sp.front().type == token::Type::SUBSTITUTE) {
+        sp = sp.subspan(1);  // Skip the 'substitute' token
+        if (sp.front().type != token::Type::LEFT_BRACE) {
+            throw ParserException("Expected '{' after 'substitute'", sp.front(),
+                                  __func__);
+        }
+        sp = sp.subspan(1);  // Skip the '{' token
+
+        substitution_map subs;
+        while (sp.front().type == token::Type::IDENTIFIER) {
+            auto ident = parse_ident(sp);
+            if (sp.front().type != token::Type::COLON) {
+                throw ParserException("Expected ':' after identifier",
+                                      sp.front(), __func__);
+            }
+            sp = sp.subspan(1);  // Skip the ':' token
+            auto value = parse_expr(sp);
+
+            // Add to the substitution map
+            subs[ident->name.lexeme] = std::move(value);
+
+            if (sp.front().type == token::Type::COMMA) {
+                sp = sp.subspan(1);  // Skip the ',' token
+            } else if (sp.front().type == token::Type::RIGHT_BRACE) {
+                break;  // End of substitutions
+            } else {
+                throw ParserException("Expected ',' or '}' after substitution",
+                                      sp.front(), __func__);
+            }
+        }
+        if (sp.front().type != token::Type::RIGHT_BRACE) {
+            throw ParserException("Expected '}' after substitutions",
+                                  sp.front(), __func__);
+        }
+        sp = sp.subspan(1);  // Skip the '}' token
+        auto body = parse_expr(sp);
+
+        return std::make_shared<expr>(
+            sub_expr{std::move(subs), std::move(body)});
+    }
+    // If no 'substitute' keyword, just parse the expression
+    return parse_equality(sp);
+}
+
+// Handle the equivalence (==) and XOR (!=) operations
+std::shared_ptr<expr> parse_equality(const_span& sp) {
     auto left{parse_implication(sp)};
 
-    if (!sp.empty()) {
-        if (sp.front().type == token::Type::EQUAL_EQUAL) {
-            // p == q is converted to (p & q) | (!p & !q)
-            const auto op = sp.front();
-            sp = sp.subspan(1);  // Skip the '==' token
-            auto right = parse_implication(sp);
+    if (sp.front().type == token::Type::EQUAL_EQUAL) {
+        // p == q is converted to (p & q) | (!p & !q)
+        const auto op = sp.front();
+        sp = sp.subspan(1);  // Skip the '==' token
+        auto right = parse_implication(sp);
 
-            // Create (p & q)
-            auto p_and_q = std::make_shared<expr>(
-                bin_expr{left, right, token{token::Type::LAND, "&"}});
+        // Create (p & q)
+        auto p_and_q = std::make_shared<expr>(
+            bin_expr{left, right, token{token::Type::LAND, "&"}});
 
-            // Create (!p & !q)
-            auto not_p = std::make_shared<expr>(
-                unary_expr{std::move(left), token{token::Type::BANG, "!"}});
-            auto not_q = std::make_shared<expr>(
-                unary_expr{std::move(right), token{token::Type::BANG, "!"}});
-            auto not_p_and_not_q = std::make_shared<expr>(
-                bin_expr{std::move(not_p), std::move(not_q),
-                         token{token::Type::LAND, "&"}});
+        // Create (!p & !q)
+        auto not_p = std::make_shared<expr>(
+            unary_expr{std::move(left), token{token::Type::BANG, "!"}});
+        auto not_q = std::make_shared<expr>(
+            unary_expr{std::move(right), token{token::Type::BANG, "!"}});
+        auto not_p_and_not_q = std::make_shared<expr>(bin_expr{
+            std::move(not_p), std::move(not_q), token{token::Type::LAND, "&"}});
 
-            // Create (p & q) | (!p & !q)
-            return std::make_shared<expr>(
-                bin_expr{std::move(p_and_q), std::move(not_p_and_not_q),
-                         token{token::Type::LOR, "|"}});
-        }
+        // Create (p & q) | (!p & !q)
+        return std::make_shared<expr>(bin_expr{std::move(p_and_q),
+                                               std::move(not_p_and_not_q),
+                                               token{token::Type::LOR, "|"}});
+    }
 
-        else if (sp.front().type == token::Type::BANG_EQUAL) {
-            // p != q -> (p & !q) | (!p & q)
-            const auto op = sp.front();
-            sp = sp.subspan(1);  // Skip the '!=' token
-            auto right = parse_implication(sp);
+    else if (sp.front().type == token::Type::BANG_EQUAL) {
+        // p != q -> (p & !q) | (!p & q)
+        const auto op = sp.front();
+        sp = sp.subspan(1);  // Skip the '!=' token
+        auto right = parse_implication(sp);
 
-            auto not_p = std::make_shared<expr>(
-                unary_expr{left, token{token::Type::BANG, "!"}});
-            auto not_q = std::make_shared<expr>(
-                unary_expr{right, token{token::Type::BANG, "!"}});
+        auto not_p = std::make_shared<expr>(
+            unary_expr{left, token{token::Type::BANG, "!"}});
+        auto not_q = std::make_shared<expr>(
+            unary_expr{right, token{token::Type::BANG, "!"}});
 
-            // Create (p & !q)
-            auto p_and_not_q = std::make_shared<expr>(
-                bin_expr{std::move(left), std::move(not_q),
-                         token{token::Type::LAND, "&"}});
-            // Create (!p & q)
-            auto not_p_and_q = std::make_shared<expr>(
-                bin_expr{std::move(not_p), std::move(right),
-                         token{token::Type::LAND, "&"}});
+        // Create (p & !q)
+        auto p_and_not_q = std::make_shared<expr>(bin_expr{
+            std::move(left), std::move(not_q), token{token::Type::LAND, "&"}});
+        // Create (!p & q)
+        auto not_p_and_q = std::make_shared<expr>(bin_expr{
+            std::move(not_p), std::move(right), token{token::Type::LAND, "&"}});
 
-            // Create (p & !q) | (!p & q)
-            return std::make_shared<expr>(
-                bin_expr{std::move(p_and_not_q), std::move(not_p_and_q),
-                         token{token::Type::LOR, "|"}});
-        }
+        // Create (p & !q) | (!p & q)
+        return std::make_shared<expr>(bin_expr{std::move(p_and_not_q),
+                                               std::move(not_p_and_q),
+                                               token{token::Type::LOR, "|"}});
     }
 
     return left;
