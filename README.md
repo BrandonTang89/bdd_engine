@@ -161,7 +161,7 @@ This reachability check is done with breath-first search (BFS)
 source <filename>
 ```
 
-Loads the entire file into memory, scans it, parses it and executes it. The file is expected to be a valid script.
+Loads the entire file into memory, scans it, parses it, and executes it. The file is expected to be a valid script.
 
 The filename should only consist of the following characters:
 
@@ -267,12 +267,15 @@ Quantification is used to eliminate variables from a BDD.
 - `exists x P` is equivalent to `(sub {x: true} P) | (sub {x: false} P)`
 - `forall x P` is equivalent to `(sub {x: true} P) & (sub {x: false} P)`
 
-Note that these operations are implemented directly and are thus more efficient than using substitutions to achieve the same effect.
+Note that these operations are implemented directly and are thus more efficient than using substitutions to achieve the
+same effect.
 
 The quantification operations can support multiple variables with a single operation:
+
 - e.g. `exists (x y) P` is equivalent to `exists x (exists y P)`
 
-This is more efficient than performing multiple quantification operations in a row, as it does a single traversal of the BDD
+This is more efficient than performing multiple quantification operations in a row, as it does a single traversal of the
+BDD
 
 ### Propositional Logic Operations
 
@@ -345,9 +348,11 @@ The project is a tree-walk interpreter, so it has three internal parts:
         - A call to the `parse` function returns an `expected` object that either has the parsed ASTs or a list of parse
           errors.
     - `ast.h` contains the abstract syntax tree (AST) node types
+        - `ast.cpp` implements a method to stringify the ASTs for debugging purposes
 - A tree-walk interpreter
     - `walker.h` contains the interface for the interpreter, including the run-time BDD graph
     - `walker.cpp` implements the execution of statements
+    - `walker_bdd_substitute.cpp` implements the run-time substitution of variables in BDDs
     - `walker_bdd_manip.cpp` implements the run-time construction and manipulation of BDDs
     - `walker_bdd_view.cpp` implements queries about the BDDs, such as satisfiability and display functions
 
@@ -357,6 +362,7 @@ The REPL and overall application are implemented by the following
 - `colours.h` contains the colour codes for terminal output
 - `main.cpp` contains the main function
 - `repl.h/cpp` contains the REPL interface/implementation
+- `engine_exceptions.h` contains the custom exceptions for the lexer, parser, and walker
 
 # Building and Dependencies
 
@@ -387,7 +393,7 @@ We can run benchmarks with `./tests "[!-benchmark]"` to get the benchmark result
 
 ### REPL Usage
 
-The default way to use the application is as a REPL. The REPL will read a line of input, parse it and execute it. The
+The default way to use the application is as a REPL. The REPL will read a line of input, parse it, and execute it. The
 REPL will print the result of the execution.
 
 To be able to use up and down arrow keys to use previous commands, use `rlwrap` to run the binary.
@@ -399,7 +405,7 @@ rlwrap ./bdd_engine
 ### Script Usage
 
 We can also pass a script file to the binary. The script file should be a valid script. The script file will be loaded
-into memory, scanned, parsed and executed.
+into memory, scanned, parsed, and executed.
 
 ```bash
 ./bdd_engine --source <script_file.bdd>
