@@ -8,7 +8,7 @@
 std::shared_ptr<expr> Walker::construct_expr(const id_type id) {
     if (id == 0) {
         return false_expr;
-    };
+    }
     if (id == 1) {
         return true_expr;
     }

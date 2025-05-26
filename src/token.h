@@ -41,16 +41,22 @@ struct token {
         GRAPH_DISPLAY,
         IS_SAT,
         SOURCE,
-        CLEAR_CACHE,
 
         // Special Keywords for quantifiers
         EXISTS,
         FORALL,
 
+        // Special Keywords for memory management
+        CLEAR_CACHE,
+        PRESERVE,
+        UNPRESERVE,
+        PRESERVE_ALL,
+        UNPRESERVE_ALL,
+        SWEEP,
     };
 
     Type type;
-    std::string lexeme;               // the text of the token
+    std::string lexeme;                     // the text of the token
     std::optional<uint32_t> token_value{};  // optional value for number tokens
 
     token(const Type type, const std::string& lexeme,
@@ -62,7 +68,9 @@ struct token {
     std::string repr() const {
         return "Token(" + std::to_string(static_cast<int>(type)) + ", " +
                lexeme +
-               (token_value.has_value() ? ", " + std::to_string(token_value.value()) : "") +
+               (token_value.has_value()
+                    ? ", " + std::to_string(token_value.value())
+                    : "") +
                ")";
     }
 };

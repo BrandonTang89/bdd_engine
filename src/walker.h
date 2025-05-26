@@ -45,6 +45,7 @@ struct Bdd_ptype {
     // Expression type
     std::string name{};
     id_type id{};
+    bool preserved{};
 };
 
 using Ptype = std::variant<Bvar_ptype, Bdd_ptype>;
@@ -130,7 +131,9 @@ class Walker {
     std::string bdd_repr(id_type id);
     std::string bdd_gviz_repr(id_type id);
 
+    // === Memory Management ===
     void clear_memos();
+    void sweep(); // sweep non-preserved BDDs from memory
 
    public:
     Walker();

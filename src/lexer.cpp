@@ -11,10 +11,15 @@ const std::unordered_map<std::string, token::Type> keyword_map = {
     {"display_graph", token::Type::GRAPH_DISPLAY},
     {"is_sat", token::Type::IS_SAT},
     {"source", token::Type::SOURCE},
-    {"clear_cache", token::Type::CLEAR_CACHE},
+    {"sub", token::Type::SUBSTITUTE},
     {"exists", token::Type::EXISTS},
     {"forall", token::Type::FORALL},
-    {"sub", token::Type::SUBSTITUTE},
+    {"clear_cache", token::Type::CLEAR_CACHE},
+    {"preserve", token::Type::PRESERVE},
+    {"preserve_all", token::Type::PRESERVE_ALL},
+    {"unpreserve", token::Type::UNPRESERVE},
+    {"unpreserve_all", token::Type::UNPRESERVE_ALL},
+    {"sweep", token::Type::SWEEP},
 };
 
 constexpr bool is_lexeme_char(const char c) {
@@ -108,7 +113,7 @@ lex_result_t scan_to_tokens(const std::string& source) {
                     tokens.emplace_back(token::Type::ID, std::to_string(number),
                                         number);
                 } else {
-                    return std::unexpected<LexerException>(LexerException(
+                    return std::unexpected(LexerException(
                         "Unexpected character: " + std::string(1, c),
                         __func__));
                 }

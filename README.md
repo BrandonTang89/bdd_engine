@@ -5,13 +5,6 @@
 C++ Implementation of Reduced Ordered [Binary Decision Diagrams](https://en.wikipedia.org/wiki/Binary_decision_diagram)
 for Propositional Formulae Manipulation.
 
-## Todo
-
-*Meta Features*
-
-- Implement garbage sweeping of unreachable BDD nodes
-- Web GUI using WASM
-
 # Language
 
 ## Grammar
@@ -27,16 +20,21 @@ statements:
 statement: 
     | "bvar" IDENTIFIER* ";"
     | "set" IDENTIFIER "=" expression ";"
-    | function_name expression* ";"
+    | function_call ";"
     | expression ";"
 
-function_name
-    | "display_tree" 
-    | "display_graph"
-    | "is_sat"
-    | "source"
+function_call
+    | "display_tree" expression
+    | "display_graph" expression
+    | "is_sat" expression
+    | "source" FILENAME
     | "clear_cache"
-
+    | "preserve" IDENTIFIER*;
+    | "preserve_all";
+    | "unpreserve" IDENTIFIER*;
+    | "unpreserve_all";
+    | "sweep";
+    
 expression:
     | "sub" "{" (IDENTIFIER ":" expression ("," IDENTIFIER ":" expression)*)? "}" expression
     | equality
@@ -91,12 +89,12 @@ execution will not continue after the error.
 
 ## Statements
 
-A statement is either
+Statements are used to
 
-- a BDD variable declaration
-- an assignment
-- a function call
-- an expression statement
+- Declare symbolic variables
+- Do assignments
+- Call functions for BDD queries or memory management
+- Evaluate expressions
 
 ### Symbolic Variable Declaration
 
@@ -110,6 +108,9 @@ This will create two symbolic variables `x` and `y`.
 
 The order in which symbolic variables are declared is important as this is their order within the BDDs.
 
+The BDD order cannot be changed without restarting the REPL or reloading the script since that would invalidate existing
+BDDs.
+
 ### Assignments
 
 We can assign BDDs to any non-symbolic variables using the `set` keyword.
@@ -120,7 +121,7 @@ set b = !x | y;
 set c = a & b;
 ```
 
-### Built-in Functions
+### BDD Query Functions
 
 We have a few built-in functions to query about the BDDs:
 
@@ -155,6 +156,8 @@ satisfiable or not.
 
 This reachability check is done with breath-first search (BFS)
 
+### Loading and Running Scripts
+
 #### Run a script file
 
 ```
@@ -170,7 +173,9 @@ The filename should only consist of the following characters:
 - Underscore (`_`)
 - Dot (`.`)
 
-### Clearing Caches
+### Memory Management and Garbage Collection
+
+#### clear_cache
 
 The interpreter has caches for:
 
@@ -189,6 +194,76 @@ clear_cache;
 ```
 
 Will clear all of these caches.
+
+#### preserve
+
+Marks one or more BDDs as protected from garbage collection. When you preserve a BDD, it will not be deleted during a
+sweep operation, even if there are no other references to it.
+
+```
+set a = x & y;    // Create a BDD
+preserve a;       // Mark 'a' as preserved
+sweep;            // 'a' will be kept in memory
+```
+
+You can preserve multiple BDDs by listing them:
+
+```
+preserve a b c;   // Preserve BDDs named 'a', 'b', and 'c'
+```
+
+#### preserve_all
+
+Marks all currently existing BDDs as preserved. This is useful when you want to ensure that your entire working set is
+protected from garbage collection.
+
+```
+set a = x & y;
+set b = x | z;
+preserve_all;     // Both 'a' and 'b' are now preserved
+sweep;            // Nothing will be deleted
+```
+
+#### unpreserve
+
+Removes the preservation mark from one or more BDDs, making them eligible for garbage collection during the next sweep.
+
+```
+preserve_all;     // Preserve all BDDs
+unpreserve b;     // Make 'b' eligible for deletion
+sweep;            // 'b' will be deleted
+```
+
+#### unpreserve_all
+
+Removes the preservation mark from all BDDs, making all of them eligible for garbage collection.
+
+```
+preserve_all;
+unpreserve_all;   // No BDDs are preserved anymore
+sweep;            // All unpreserved BDDs will be deleted
+```
+
+#### sweep
+
+Performs garbage collection, removing all non-preserved BDDs from memory. This helps manage memory usage by cleaning up
+BDDs that are no longer needed.
+
+Sweep automatically calls `clear_cache` to ensure the caches are valid.
+
+```
+set a = x & y;
+set b = a | z;
+preserve a;
+sweep;            // 'b' will be deleted, but 'a' remains
+```
+
+#### Notes
+
+- The garbage collector always preserves the TRUE and FALSE nodes (BDD IDs 0 and 1)
+- When sweeping, all intermediate BDD nodes that are only referenced by deleted BDDs will also be removed
+- Attempting to preserve a non-existent BDD or a symbolic variable will result in an error message
+- Preserving a BDD preserves all nodes in its structure, including shared nodes used by other BDDs
 
 ### Expression Statements
 
@@ -355,6 +430,7 @@ The project is a tree-walk interpreter, so it has three internal parts:
     - `walker_bdd_substitute.cpp` implements the run-time substitution of variables in BDDs
     - `walker_bdd_manip.cpp` implements the run-time construction and manipulation of BDDs
     - `walker_bdd_view.cpp` implements queries about the BDDs, such as satisfiability and display functions
+    - `walker_sweep.cpp` implements memory management operations such as sweeping and cache clearing
 
 The REPL and overall application are implemented by the following
 

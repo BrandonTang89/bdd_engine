@@ -47,6 +47,11 @@ stmt parse_statement(const_span& sp) {
         case token::Type::IS_SAT:
         case token::Type::SOURCE:
         case token::Type::CLEAR_CACHE:
+        case token::Type::PRESERVE:
+        case token::Type::PRESERVE_ALL:
+        case token::Type::UNPRESERVE:
+        case token::Type::UNPRESERVE_ALL:
+        case token::Type::SWEEP:
             return parse_func_call(sp);
         default:  // assume expr statement
             return parse_expr_stmt(sp);

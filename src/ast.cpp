@@ -55,8 +55,10 @@ std::string stmt_repr(const stmt& statement) {
                 for (const auto& arg : s.arguments) {
                     result += expr_repr(*arg) + ", ";
                 }
-                result.pop_back();  // Remove last space
-                result.pop_back();  // Remove last comma
+                if (!s.arguments.empty()) {
+                    result.pop_back();  // Remove last space
+                    result.pop_back();  // Remove last comma
+                }
                 result += "))";
                 return result;
             } else if constexpr (std::is_same_v<T, decl_stmt>) {

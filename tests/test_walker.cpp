@@ -396,6 +396,203 @@ TEST_CASE("Clear Cache Function") {
     }
 }
 
+TEST_CASE("Preservation and Garbage Collection") {
+    InterpTester interp;
+    interp.feed("bvar x y z;");
+
+    SECTION("Basic Preservation and Sweeping") {
+        // Create some BDDs
+        interp.feed("set a = x & y;");
+        interp.feed("set b = x | z;");
+        interp.feed("set c = a & b;");
+
+        // Preserve one BDD and sweep
+        interp.feed("preserve a;");
+        interp.feed("sweep;");
+
+        // 'a' should still be accessible, but 'b' and 'c' should be gone
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+        interp.feed("b;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+
+        interp.feed("c;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+    }
+
+    SECTION("Preserve Multiple BDDs") {
+        interp.feed("set a = x & y;");
+        interp.feed("set b = x | z;");
+        interp.feed("set c = a & b;");
+
+        // Preserve multiple BDDs and sweep
+        interp.feed("preserve a b;");
+        interp.feed("sweep;");
+
+        // 'a' and 'b' should still be accessible, but 'c' should be gone
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("b") ==
+                "x ? (TRUE) : (z ? (TRUE) : (FALSE))");
+
+        interp.feed("c;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+    }
+    SECTION("Preserve All BDDs") {
+        interp.feed("set a = x & y;");
+        interp.feed("set b = x | z;");
+        interp.feed("set c = a & b;");
+
+        // Preserve all BDDs and sweep
+        interp.feed("preserve_all;");
+        interp.feed("sweep;");
+
+        // All BDDs should still be accessible
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("b") ==
+                "x ? (TRUE) : (z ? (TRUE) : (FALSE))");
+        REQUIRE(interp.expr_tree_repr("c") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+    }
+
+    SECTION("Unpreserve Specific BDDs") {
+        interp.feed("set a = x & y;");
+        interp.feed("set b = x | z;");
+        interp.feed("set c = a & b;");
+
+        // Preserve all and then unpreserve specific BDDs
+        interp.feed("preserve_all;");
+        interp.feed("unpreserve b;");
+        interp.feed("sweep;");
+
+        // 'a' and 'c' should still be accessible, but 'b' should be gone
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+        interp.feed("b;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+        REQUIRE(interp.expr_tree_repr("c") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+    }
+
+    SECTION("Unpreserve Multiple BDDs") {
+        interp.feed("set a = x & y;");
+        interp.feed("set b = x | z;");
+        interp.feed("set c = a & b;");
+
+        // Preserve all and then unpreserve multiple BDDs
+        interp.feed("preserve_all;");
+        interp.feed("unpreserve a c;");
+        interp.feed("sweep;");
+
+        // Only 'b' should be accessible
+        interp.feed("a;");
+
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+        REQUIRE(interp.expr_tree_repr("b") ==
+                "x ? (TRUE) : (z ? (TRUE) : (FALSE))");
+        interp.feed("c;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+    }
+
+    SECTION("Unpreserve All BDDs") {
+        interp.feed("set a = x & y;");
+        interp.feed("set b = x | z;");
+        interp.feed("set c = a & b;");
+
+        // Preserve all, then unpreserve all, and sweep
+        interp.feed("preserve_all;");
+        interp.feed("unpreserve_all;");
+        interp.feed("sweep;");
+
+        // No BDDs should be accessible
+        interp.feed("a;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+
+        interp.feed("b;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+
+        interp.feed("c;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+    }
+
+    SECTION("Preserve After Unpreserving") {
+        interp.feed("set a = x & y;");
+        interp.feed("set b = x | z;");
+
+        // Unpreserve all, then preserve one, and sweep
+        interp.feed("preserve_all;");
+        interp.feed("unpreserve_all;");
+        interp.feed("preserve a;");
+        interp.feed("sweep;");
+
+        // Only 'a' should be accessible
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+
+        interp.feed("b;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+    }
+    SECTION("Create BDDs After Sweeping") {
+        interp.feed("set a = x & y;");
+        interp.feed("sweep;");  // This will remove 'a' since it's not preserved
+
+        // Create new BDDs after sweeping
+        interp.feed("set b = x | z;");
+
+        // 'a' should be gone, but 'b' should be accessible
+        interp.feed("a;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+
+        REQUIRE(interp.expr_tree_repr("b") ==
+                "x ? (TRUE) : (z ? (TRUE) : (FALSE))");
+    }
+
+    SECTION("Sweep Multiple Times") {
+        interp.feed("set a = x & y;");
+        interp.feed("preserve a;");
+        interp.feed("sweep;");
+
+        // Create more BDDs and sweep again
+        interp.feed("set b = x | z;");
+        interp.feed("sweep;");
+
+        // 'a' should still be accessible, but 'b' should be gone
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+
+        interp.feed("b;");
+        REQUIRE(absl::StrContains(interp.get_output(), "ExecutionException"));
+    }
+
+    SECTION("Preserve Non-existent BDDs") {
+        // Try to preserve a non-existent BDD
+        interp.feed("preserve nonexistent;");
+        REQUIRE(absl::StrContains(interp.get_output(), "Variable not found"));
+
+        // Create a BDD after attempting to preserve a non-existent one
+        interp.feed("set a = x & y;");
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+    }
+
+    SECTION("Preserve Symbolic Variables") {
+        // Try to preserve a symbolic variable
+        interp.feed("preserve x;");
+        REQUIRE(
+            absl::StrContains(interp.get_output(), "Variable is not a BDD"));
+
+        // Create and preserve a real BDD
+        interp.feed("set a = x & y;");
+        interp.feed("preserve a;");
+        interp.feed("sweep;");
+
+        // The BDD should still be accessible
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+    }
+}
+
 TEST_CASE("Using IDs as Expressions") {
     InterpTester interp;
     interp.feed("bvar x y z;");

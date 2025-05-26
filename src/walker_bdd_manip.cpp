@@ -5,13 +5,6 @@
 #include "engine_exceptions.h"
 #include "walker.h"
 
-void Walker::clear_memos() {  // for later: Implement garbage collection
-    binop_memo.clear();
-    not_memo.clear();
-    is_sat_memo.clear();
-    id_to_expr_memo.clear();
-}
-
 id_type Walker::construct_bdd(const expr& x) {
     id_type ret_id{};
     std::visit(
@@ -25,7 +18,7 @@ id_type Walker::construct_bdd(const expr& x) {
                 auto reconstructed_expr = construct_expr(body_bdd);
                 auto substituted_expr =
                     substitute_expr(reconstructed_expr, sub_map);
-                sub_memo.clear(); // sub memo is for specific substitutions
+                sub_memo.clear();  // sub memo is for specific substitutions
                 auto subbed_body = construct_bdd(*substituted_expr);
                 return ret_id = subbed_body;
             } else if constexpr (std::is_same_v<T, bin_expr>) {

@@ -181,7 +181,7 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
             auto filename =
                 std::get<identifier>(*statement.arguments[0]).name.lexeme;
 
-            // Read all of the file into the buffer
+            // Read all the file into the buffer
             std::string buffer;
             std::ifstream f(filename);
             if (!f.is_open()) {
@@ -223,6 +223,69 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
         case token::Type::CLEAR_CACHE: {
             clear_memos();
             out << "Cleared all caches" << '\n';
+            break;
+        }
+        case token::Type::PRESERVE: {
+            for (const auto& arg : statement.arguments) {
+                if (!std::holds_alternative<identifier>(*arg)) {
+                    throw ExecutionException(
+                        "Invalid argument type for preserve", __func__);
+                }
+                if (const auto& id = std::get<identifier>(*arg).name.lexeme;
+                    globals.contains(id)) {
+                    if (std::holds_alternative<Bdd_ptype>(globals[id])) {
+                        std::get<Bdd_ptype>(globals[id]).preserved = true;
+                        out << "Preserved BDD: " << id << '\n';
+                    } else {
+                        out << "Variable is not a BDD: " << id << '\n';
+                    }
+                } else {
+                    out << "Variable not found: " << id << '\n';
+                }
+            }
+            break;
+        }
+        case token::Type::PRESERVE_ALL: {
+            for (auto& [name, value] : globals) {
+                if (std::holds_alternative<Bdd_ptype>(value)) {
+                    std::get<Bdd_ptype>(value).preserved = true;
+                    out << "Preserved BDD: " << name << '\n';
+                }
+            }
+            break;
+        }
+        case token::Type::UNPRESERVE: {
+            for (const auto& arg : statement.arguments) {
+                if (!std::holds_alternative<identifier>(*arg)) {
+                    throw ExecutionException(
+                        "Invalid argument type for unpreserve", __func__);
+                }
+                if (const auto& id = std::get<identifier>(*arg).name.lexeme;
+                    globals.contains(id)) {
+                    if (std::holds_alternative<Bdd_ptype>(globals[id])) {
+                        std::get<Bdd_ptype>(globals[id]).preserved = false;
+                        out << "Unpreserved BDD: " << id << '\n';
+                    } else {
+                        out << "Variable is not a BDD: " << id << '\n';
+                    }
+                } else {
+                    out << "Variable not found: " << id << '\n';
+                }
+            }
+            break;
+        }
+        case token::Type::UNPRESERVE_ALL: {
+            for (auto& [name, value] : globals) {
+                if (std::holds_alternative<Bdd_ptype>(value)) {
+                    std::get<Bdd_ptype>(value).preserved = false;
+                    out << "Unpreserved BDD: " << name << '\n';
+                }
+            }
+            break;
+        }
+        case token::Type::SWEEP: {
+            sweep();
+            out << "Swept all non-preserved BDDs" << '\n';
             break;
         }
         default:
