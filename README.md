@@ -80,7 +80,7 @@ primary:
 
 ## Semantics
 
-### Exceptions
+### Exceptions and Errors
 
 When you give input, either via the REPL or using `source`, each statement of the input is parsed into an AST. If any
 statement is invalid, none of the statements are executed. The parser will return a list of parser exceptions which will
@@ -89,7 +89,7 @@ be printed to the console.
 During execution, if any statement is invalid, the execution will stop and the error will be printed to the console. The
 execution will not continue after the error.
 
-### Statements
+## Statements
 
 A statement is either
 
@@ -196,7 +196,7 @@ An expression statement is simply an expression that is evaluated.
 
 he ID of the BDD node that represents the expression is printed to the console.
 
-### Expressions
+## Expressions
 
 All expressions are evaluated to form BDDs. An expression is either
 
@@ -232,6 +232,51 @@ Note the following:
 - If a variable is not in the substitution, it is left unchanged
 - Variables are substituted simultaneously, i.e. a variable introduced by a substitution will not be substituted
   again by another substitution in the same statement
+
+Substitutions are a very powerful construct and subsume the following common operations:
+
+- Evaluating a BDD under some propositional assignment
+- Renaming a BDD with a different set of variables
+
+Internally, they work in the following way:
+
+- Construct the body expression as a BDD
+- Reverse the body into a canonical expression using only and, or, and not
+- Traverse the body expression and replace each variable with the corresponding expression from the substitution
+- Construct the final BDD from the resulting expression
+
+In all these steps, we do a large amount of caching to eliminate redundant work, so the substitution operation should
+not cause exponential blow-up.
+
+### Syntactic Sugar Operations
+
+These operations are syntactic sugar on actual operations on BDDs. They are provided for convenience and readability.
+
+- Implication: `P -> Q` is equivalent to `!P | Q`
+- Equivalence: `P == Q` is equivalent to `(P & Q) | (!P & !Q)`
+- Inequality: `P != Q` is equivalent to `(P & !Q) | (!P & Q)`
+
+Note that both the abstract syntax tree and run-time BDD representations use pointers that allow sharing across
+subformulae. Thus, the equivalence and inequality do not cause exponential blow-up in the size of the ASTs or number of
+BDDs.
+
+### Quantification
+
+Quantification is used to eliminate variables from a BDD.
+
+- `exists x P` is equivalent to `(sub {x: true} P) | (sub {x: false} P)`
+- `forall x P` is equivalent to `(sub {x: true} P) & (sub {x: false} P)`
+
+Note that these operations are implemented directly and are thus more efficient than using substitutions to achieve the same effect.
+
+The quantification operations can support multiple variables with a single operation:
+- e.g. `exists (x y) P` is equivalent to `exists x (exists y P)`
+
+This is more efficient than performing multiple quantification operations in a row, as it does a single traversal of the BDD
+
+### Propositional Logic Operations
+
+OR, AND, NOT operations are used to manipulate and combine BDDs.
 
 ## Example Interaction
 
@@ -284,22 +329,6 @@ The true and false leaves are represented by ids 1 and 0 respectively.
 
 Each required BDD is recursively constructed, ensuring that the reductions are done correctly during construction such
 that each reduced BDD has a unique ID within the graph.
-
-## Operations
-
-These operations are provided to manipulate the BDDs:
-
-- OR, AND, NOT, Exists and Forall quantification
-
-These operations are syntactic sugar on the above operations:
-
-- Implication: `P -> Q` is equivalent to `!P | Q`
-- Equivalence: `P == Q` is equivalent to `(P & Q) | (!P & !Q)`
-- Inequality: `P != Q` is equivalent to `(P & !Q) | (!P & Q)`
-
-Note that both the abstract syntax tree and run-time BDD representations use pointers that allow sharing across
-subformulae. Thus, the equivalence and inequality do not cause exponential blow-up in the size of the ASTs or number of
-BDDs.
 
 # Repository Layout
 
