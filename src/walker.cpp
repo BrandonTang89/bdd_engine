@@ -220,6 +220,11 @@ void Walker::walk_func_call_stmt(const func_call_stmt& statement) {
             walk_statements(*estmts);
             break;
         }
+        case token::Type::CLEAR_CACHE: {
+            clear_memos();
+            out << "Cleared all caches" << '\n';
+            break;
+        }
         default:
             throw ExecutionException("Unknown function call", __func__);
     }

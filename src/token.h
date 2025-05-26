@@ -41,6 +41,7 @@ struct token {
         GRAPH_DISPLAY,
         IS_SAT,
         SOURCE,
+        CLEAR_CACHE,
 
         // Special Keywords for quantifiers
         EXISTS,

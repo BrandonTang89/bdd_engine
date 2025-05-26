@@ -46,7 +46,7 @@ std::string expr_repr(const expr& expression) {
 std::string stmt_repr(const stmt& statement) {
     return std::visit(
         []<typename T0>(const T0& s) -> std::string {
-            using T = std::decay_t<T0>;
+            using T = std::remove_cvref_t<T0>;
             if constexpr (std::is_same_v<T, expr_stmt>) {
                 return "Expr_Stmt(" + expr_repr(*s.expression) + ")";
             } else if constexpr (std::is_same_v<T, func_call_stmt>) {

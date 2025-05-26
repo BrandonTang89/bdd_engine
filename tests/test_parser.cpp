@@ -74,6 +74,16 @@ TEST_CASE("Invalid Declaration") {
         REQUIRE(absl::StrContains(error, "ParserException"));
     }
 
+    SECTION("Substituting expr rather than term") {
+        std::string input = R"(
+            bvar x y z;
+            sub {x | y: y} x | y;
+        )";
+        parser_tester.feed(input);
+        std::string error = parser_tester.get_parser_error();
+        REQUIRE(absl::StrContains(error, "ParserException"));
+    }
+
     SECTION("Assignment without =") {
         std::string input = R"(
             set a true;

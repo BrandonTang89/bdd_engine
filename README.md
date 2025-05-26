@@ -9,9 +9,7 @@ for Propositional Formulae Manipulation.
 
 *Meta Features*
 
-- Implement garbage sweeping
-    - Clear operator memo tables
-    - Clear unreachable BDD nodes
+- Implement garbage sweeping of unreachable BDD nodes
 - Web GUI using WASM
 
 # Language
@@ -29,7 +27,7 @@ statements:
 statement: 
     | "bvar" IDENTIFIER* ";"
     | "set" IDENTIFIER "=" expression ";"
-    | function_name expression+ ";"
+    | function_name expression* ";"
     | expression ";"
 
 function_name
@@ -37,6 +35,7 @@ function_name
     | "display_graph"
     | "is_sat"
     | "source"
+    | "clear_cache"
 
 expression:
     | "sub" "{" (IDENTIFIER ":" expression ("," IDENTIFIER ":" expression)*)? "}" expression
@@ -171,6 +170,26 @@ The filename should only consist of the following characters:
 - Underscore (`_`)
 - Dot (`.`)
 
+### Clearing Caches
+
+The interpreter has caches for:
+
+- binary operations between BDDs
+- unary operations on BDDs
+- constructing canonical expr representations of BDDs for substitutions
+- satisfiability checks
+
+These can be reused across expressions (unlike caches for substituting an expression or performing quantification), so
+they will be preserved and not cleared after each statement.
+
+Using
+
+```text
+clear_cache;
+```
+
+Will clear all of these caches.
+
 ### Expression Statements
 
 An expression statement is simply an expression that is evaluated.
@@ -198,7 +217,6 @@ A primary expression is either
 - an identifier (declared with `set`)
 - a boolean constant (`true` or `false`)
 - an integer ID that corresponds to some BDD node
--
 
 ### Substitutions
 

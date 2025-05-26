@@ -367,6 +367,35 @@ TEST_CASE("Source Function") {
     }
 }
 
+TEST_CASE("Clear Cache Function") {
+    InterpTester interp;
+
+    SECTION("Clearing Cache") {
+        interp.feed("bvar x y z;");
+        interp.feed("set a = x & y;");
+        interp.feed("set b = a | z;");
+
+        // Ensure cache is populated
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+        REQUIRE(interp.expr_tree_repr("b") ==
+                "x ? (y ? (TRUE) : (z ? (TRUE) : (FALSE))) : (z ? (TRUE) : "
+                "(FALSE))");
+
+        interp.get_output();
+
+        // Clear cache
+        interp.feed("clear_cache;");
+
+        // After clearing, the cache should be empty
+        REQUIRE(absl::StrContains(interp.get_output(), "Cleared"));
+
+        // Variables should still be valid
+        REQUIRE(interp.expr_tree_repr("a") ==
+                "x ? (y ? (TRUE) : (FALSE)) : (FALSE)");
+    }
+}
+
 TEST_CASE("Using IDs as Expressions") {
     InterpTester interp;
     interp.feed("bvar x y z;");

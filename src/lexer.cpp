@@ -11,6 +11,7 @@ const std::unordered_map<std::string, token::Type> keyword_map = {
     {"display_graph", token::Type::GRAPH_DISPLAY},
     {"is_sat", token::Type::IS_SAT},
     {"source", token::Type::SOURCE},
+    {"clear_cache", token::Type::CLEAR_CACHE},
     {"exists", token::Type::EXISTS},
     {"forall", token::Type::FORALL},
     {"sub", token::Type::SUBSTITUTE},

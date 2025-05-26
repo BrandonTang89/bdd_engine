@@ -69,8 +69,12 @@ class Walker {
     iter_type iter_to_false;
     iter_type iter_to_true;
 
-    // absl::flat_hash_map<std::string, Ptype> globals;
     std::unordered_map<std::string, Ptype> globals;
+
+    std::vector<std::string> bdd_ordering;  // for BDD ordering
+    std::unordered_map<std::string, uint32_t> bdd_ordering_map;
+
+    // === Walking Statements ===
     void walk_raw(const stmt& statement);  // May throw execution exceptions,
                                            // dispatches to the correct function
     void walk_decl_stmt(const decl_stmt& statement);
@@ -78,35 +82,48 @@ class Walker {
     void walk_func_call_stmt(const func_call_stmt& statement);
     void walk_expr_stmt(const expr_stmt& statement);
 
-    std::vector<std::string> bdd_ordering;  // for BDD ordering
-    std::unordered_map<std::string, uint32_t>
-        bdd_ordering_map;  // for BDD ordering
-
+    // === BDD Construction ===
     id_type construct_bdd(const expr& x);
     id_type get_id(const Bdd_Node& node);
 
-    // BDD Construction
     std::unordered_map<std::tuple<id_type, id_type, BinOpType>, id_type,
                        absl::Hash<std::tuple<id_type, id_type, BinOpType>>>
-        binop_memo;
+        binop_memo;  // (reusable)
     id_type rec_apply_and(id_type a, id_type b);
     id_type rec_apply_or(id_type a, id_type b);
 
-    std::map<id_type, id_type> not_memo;
+    std::map<id_type, id_type> not_memo;  // (reusable)
     id_type rec_apply_not(id_type a);
 
     std::unordered_map<std::tuple<id_type, size_t>, id_type,
                        absl::Hash<std::tuple<id_type, size_t>>>
-        quantifier_memo;
-    // (bdd_id, number_of_bound_vars_left)
+        quantifier_memo;  // (unreusable)
 
     template <typename Comb_Fn_Type>
     id_type rec_apply_quant(id_type a, std::span<std::string> bound_vars,
                             Comb_Fn_Type comb_fn);
 
-    // // BDD Viewing
-    std::unordered_map<id_type, bool>
-        is_sat_memo;  // check if BDD is satisfiable
+    // ==== Substitution ====
+    // Convert BDDs back to Expressions for Substitution
+    std::shared_ptr<expr> false_expr{
+        std::make_shared<expr>(literal{token{token::Type::FALSE, "false"}})};
+    std::shared_ptr<expr> true_expr{
+        std::make_shared<expr>(literal{token{token::Type::TRUE, "true"}})};
+
+    // Reconstruct expr from bdd id
+    std::shared_ptr<expr> construct_expr(id_type id);
+    // Cache expr reconstructions (reusable)
+    std::unordered_map<id_type, std::shared_ptr<expr>> id_to_expr_memo;
+
+    // Cache substituted expressions for specific substitutions (unreusable)
+    std::unordered_map<std::shared_ptr<expr>, std::shared_ptr<expr>> sub_memo;
+    std::shared_ptr<expr> substitute_expr(
+        const std::shared_ptr<expr>& x,
+        const substitution_map& sub_map);  // substitute variables in expr
+
+    // === BDD Viewing ===
+    // check if BDD is satisfiable
+    std::unordered_map<id_type, bool> is_sat_memo;
     bool is_sat(id_type a);
 
     std::unordered_set<id_type> get_bdd_nodes(id_type id);
@@ -114,19 +131,6 @@ class Walker {
     std::string bdd_gviz_repr(id_type id);
 
     void clear_memos();
-
-    // Convert BDDs back to Expressions for Substitution
-    std::shared_ptr<expr> false_expr{
-        std::make_shared<expr>(literal{token{token::Type::FALSE, "false"}})};
-    std::shared_ptr<expr> true_expr{
-        std::make_shared<expr>(literal{token{token::Type::TRUE, "true"}})};
-
-    std::shared_ptr<expr> construct_expr(
-        id_type id);  // construct expr from bdd id
-
-    std::shared_ptr<expr> substitute_expr(
-        const expr& x,
-        const substitution_map& sub_map);  // substitute variables in expr
 
    public:
     Walker();

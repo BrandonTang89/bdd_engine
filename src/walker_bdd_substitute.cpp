@@ -17,12 +17,15 @@ std::shared_ptr<expr> Walker::construct_expr(const id_type id) {
         throw ExecutionException("ID not found: " + std::to_string(id),
                                  "Walker::construct_expr");
     }
+
+    if (id_to_expr_memo.contains(id)) return id_to_expr_memo[id];
+
     const auto& node = id_to_iter[id]->first;
     assert(node.type == Bdd_Node::Bdd_type::INTERNAL);
 
     // (x -> high) & (!x -> low) => (!x | high) & (x | low)
-    auto x =
-        std::make_shared<expr>(identifier{token{token::Type::IDENTIFIER, node.var}});
+    auto x = std::make_shared<expr>(
+        identifier{token{token::Type::IDENTIFIER, node.var}});
     auto not_x =
         std::make_shared<expr>(unary_expr{x, token{token::Type::BANG, "!"}});
 
@@ -33,26 +36,32 @@ std::shared_ptr<expr> Walker::construct_expr(const id_type id) {
         std::move(x), construct_expr(node.low), token{token::Type::LOR, "|"}});
 
     // Combine the two implications with AND
-    return std::make_shared<expr>(bin_expr{std::move(x_implies_high),
-                                           std::move(not_x_implies_low),
-                                           token{token::Type::LAND, "&"}});
+    return id_to_expr_memo[id] = std::make_shared<expr>(
+               bin_expr{std::move(x_implies_high), std::move(not_x_implies_low),
+                        token{token::Type::LAND, "&"}});
 }
 
-std::shared_ptr<expr> Walker::substitute_expr(const expr& x,
+std::shared_ptr<expr> Walker::substitute_expr(const std::shared_ptr<expr>& x,
                                               const substitution_map& sub_map) {
     std::shared_ptr<expr> ret_expr{};
+
+    if (sub_memo.contains(x)) {
+        // Return cached substituted expression
+        return sub_memo.at(x);
+    }
+
     std::visit(
         [&ret_expr, &sub_map, this]<typename T0>(const T0& exp) {
             using T = std::remove_cvref_t<T0>;
             if constexpr (std::is_same_v<T, bin_expr>) {
-                auto left_expr = substitute_expr(*exp.left, sub_map);
-                auto right_expr = substitute_expr(*exp.right, sub_map);
+                auto left_expr = substitute_expr(exp.left, sub_map);
+                auto right_expr = substitute_expr(exp.right, sub_map);
                 return ret_expr = std::make_shared<expr>(
                            bin_expr{std::move(left_expr), std::move(right_expr),
                                     exp.op});
 
             } else if constexpr (std::is_same_v<T, unary_expr>) {
-                auto operand_expr = substitute_expr(*exp.operand, sub_map);
+                auto operand_expr = substitute_expr(exp.operand, sub_map);
                 return ret_expr = std::make_shared<expr>(
                            unary_expr{std::move(operand_expr), exp.op});
 
@@ -96,7 +105,7 @@ std::shared_ptr<expr> Walker::substitute_expr(const expr& x,
                 return ret_expr = false_expr;
             }
         },
-        x);
+        *x);
 
-    return ret_expr;
+    return sub_memo[x] = ret_expr;
 }

@@ -46,6 +46,7 @@ stmt parse_statement(const_span& sp) {
         case token::Type::GRAPH_DISPLAY:
         case token::Type::IS_SAT:
         case token::Type::SOURCE:
+        case token::Type::CLEAR_CACHE:
             return parse_func_call(sp);
         default:  // assume expr statement
             return parse_expr_stmt(sp);
@@ -101,10 +102,8 @@ func_call_stmt parse_func_call(const_span& sp) {
     func_call_stmt call{sp.front(), {}};
     sp = sp.subspan(1);  // Skip the function name token
 
-    while (true) {
+    while (sp.front().type != token::Type::SEMICOLON) {
         call.arguments.push_back(parse_expr(sp));
-
-        if (sp.front().type == token::Type::SEMICOLON) break;
     }
     sp = sp.subspan(1);  // Skip the ';' token
     return call;
