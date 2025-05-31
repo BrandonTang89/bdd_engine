@@ -51,8 +51,6 @@ if (EMSCRIPTEN)
 else ()
     # Native/x86 options
     message(STATUS "Configuring for native target")
-    add_compile_options(-fsanitize=address,undefined -Wall -Wextra -Wpedantic)
-    add_link_options(-fsanitize=address,undefined)
 endif ()
 
 
