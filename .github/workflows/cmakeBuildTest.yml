@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: ["main"]
 
-env:
-  BUILD_TYPE: Release
-  BUILD_DIR: cmake_build_release
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,7 +21,7 @@ jobs:
 
       - name: Build and test in flake dev shell
         run: |
-          nix develop --command env BUILD_TYPE="$BUILD_TYPE" bash -lc '
+          nix develop --command bash -lc '
             build release
-            ctest --test-dir "$BUILD_DIR" --output-on-failure
+            ctest --test-dir cmake_build_release --output-on-failure
           '
