@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -lt 1 ]]; then
+  echo "Usage: run <debug|release> [-- <args...>]" >&2
+  exit 1
+fi
+
+variant="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+shift
+
+case "${variant}" in
+  debug)
+    build_dir="cmake_build_debug"
+    ;;
+  release)
+    build_dir="cmake_build_release"
+    ;;
+  *)
+    echo "Unknown build variant: ${variant}" >&2
+    echo "Usage: run <debug|release> [-- <args...>]" >&2
+    exit 1
+    ;;
+esac
+
+if [[ "${1:-}" == "--" ]]; then
+  shift
+fi
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "${script_dir}/.." && pwd)"
+
+"${script_dir}/build" "${variant}"
+
+binary="${repo_root}/${build_dir}/bdd_engine"
+if [[ ! -x "${binary}" ]]; then
+  echo "Built binary not found at ${binary}" >&2
+  exit 1
+fi
+
+exec "${binary}" "$@"

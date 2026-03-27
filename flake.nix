@@ -24,6 +24,8 @@
             ];
 
             shellHook = ''
+              REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+              export PATH="$REPO_ROOT/scripts:$PATH"
               export CC=${pkgs.gcc14}/bin/gcc
               export CXX=${pkgs.gcc14}/bin/g++
             '';

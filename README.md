@@ -450,6 +450,11 @@ Depends on [Abseil](https://github.com/abseil/abseil-cpp) and [Catch2](https://g
 
 This repository provides a `flake.nix` with a dev shell containing GCC 14, CMake, Ninja, Abseil and Catch2.
 
+The shell also adds `scripts/` to `PATH`, so the following commands work from any directory inside the repository:
+
+- `build debug` / `build release`: configure + build in `cmake_build_debug` or `cmake_build_release`
+- `run debug` / `run release`: configure + build and then run `bdd_engine` from your current directory
+
 ```bash
 nix develop
 ./scripts/build_and_test.sh
