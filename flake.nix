@@ -19,8 +19,8 @@
               gcc14
               cmake
               ninja
-              python3
-              python3Packages.conan
+              abseil-cpp
+              catch2
             ];
 
             shellHook = ''

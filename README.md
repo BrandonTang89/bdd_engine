@@ -442,31 +442,19 @@ The REPL and overall application are implemented by the following
 
 # Building and Dependencies
 
-Uses [CMake](https://cmake.org/) 3.31 and [Conan](https://conan.io/) 2.15.0, tested on [GCC](https://gcc.gnu.org/) 14.
+Uses [CMake](https://cmake.org/) 3.31 and [Nix](https://nixos.org/) flakes, tested on [GCC](https://gcc.gnu.org/) 14.
 
 Depends on [Abseil](https://github.com/abseil/abseil-cpp) and [Catch2](https://github.com/catchorg/Catch2).
 
-The easiest way to configure and build is using the Conan extension in CLion.
-
 ## Nix Development Shell
 
-This repository provides a `flake.nix` with a dev shell containing GCC 14, CMake, Ninja, Python and Conan.
+This repository provides a `flake.nix` with a dev shell containing GCC 14, CMake, Ninja, Abseil and Catch2.
 
 ```bash
 nix develop
-conan profile detect --force
-cmake -S . -B cmake_build -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=conan_provider.cmake -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B cmake_build -DCMAKE_BUILD_TYPE=Release
 cmake --build cmake_build
 ctest --test-dir cmake_build --output-on-failure
-```
-
-Otherwise:
-
-```bash
-mkdir cmake-build-release
-cd cmake-build-release
-cmake .. -G Ninja -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release
-cmake --build .
 ```
 
 ## Unit Tests
@@ -505,27 +493,10 @@ We can cross-compile the project to WebAssembly using [Emscripten](https://emscr
 
 First, we need to [install Emscripten](https://emscripten.org/docs/getting_started/downloads.html).
 
-Then we need to set up the following [Conan2 profile](https://docs.conan.io/2/reference/config_files/profiles.html),
-named `emscripten`:
-
-```text
-[settings]
-os=Emscripten
-arch=wasm
-compiler=clang
-compiler.version=19
-compiler.libcxx=libc++
-build_type=Release
-compiler.cppstd=23
-
-[tool_requires]
-emsdk/3.1.73
-```
-
 ```bash
 mkdir cmake-build-releasenodejs
 cd cmake-build-releasenodejs
-emcmake cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=Release -DCONAN_HOST_PROFILE=emscripten -DCONAN_BUILD_PROFILE=default
+emcmake cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j 14
 ```
 

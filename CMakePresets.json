@@ -5,9 +5,6 @@
     "minor": 30,
     "patch": 0
   },
-  "vendor": {
-    "conan": {}
-  },
   "configurePresets": [
     {
       "name": "DebugPreset",
@@ -19,8 +16,7 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_CXX_FLAGS_DEBUG": "-Wall -Wextra -Wpedantic -fsanitize=address,undefined",
-        "CMAKE_EXE_LINKER_FLAGS_DEBUG": "-fsanitize=address,undefined",
-        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "conan_provider.cmake"
+        "CMAKE_EXE_LINKER_FLAGS_DEBUG": "-fsanitize=address,undefined"
       }
     }
   ]
