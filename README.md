@@ -448,6 +448,18 @@ Depends on [Abseil](https://github.com/abseil/abseil-cpp) and [Catch2](https://g
 
 The easiest way to configure and build is using the Conan extension in CLion.
 
+## Nix Development Shell
+
+This repository provides a `flake.nix` with a dev shell containing GCC 14, CMake, Ninja, Python and Conan.
+
+```bash
+nix develop
+conan profile detect --force
+cmake -S . -B cmake_build -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=conan_provider.cmake -DCMAKE_BUILD_TYPE=Release
+cmake --build cmake_build
+ctest --test-dir cmake_build --output-on-failure
+```
+
 Otherwise:
 
 ```bash

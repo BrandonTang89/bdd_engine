@@ -14,29 +14,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Switch to gcc-14
-        run: |
-          sudo apt install gcc-14 g++-14
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 --slave /usr/bin/g++ g++ /usr/bin/g++-14 --slave /usr/bin/gcov gcov /usr/bin/gcov-14
-          sudo update-alternatives --set gcc /usr/bin/gcc-14
-
       - uses: actions/checkout@v4
 
-      - name: Install Conan
-        uses: conan-io/setup-conan@v1
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
         with:
-          cache_packages: 'true'
+          extra_nix_config: |
+            experimental-features = nix-command flakes
 
-      - name: Install Conan dependencies
+      - name: Build and test in flake dev shell
         run: |
-          mkdir cmake_build
-          cd cmake_build
-          cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="conan_provider.cmake" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-
-      - name: Build
-        working-directory: ${{github.workspace}}/cmake_build
-        run: cmake --build . -j 14
-
-      - name: Test
-        working-directory: ${{github.workspace}}/cmake_build
-        run: ctest
+          nix develop --command bash -lc '
+            conan profile detect --force
+            cmake -S . -B cmake_build -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=conan_provider.cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+            cmake --build cmake_build -j"$(nproc)"
+            ctest --test-dir cmake_build --output-on-failure
+          '
