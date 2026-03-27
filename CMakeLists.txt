@@ -56,7 +56,7 @@ endif ()
 
 # Packages
 find_package(absl)
-find_package(Catch2)
+find_package(Catch2 3 REQUIRED)
 
 if(NOT TARGET abseil::abseil)
     add_library(abseil::abseil INTERFACE IMPORTED)

@@ -20,7 +20,7 @@
               cmake
               ninja
               abseil-cpp
-              catch2
+              catch2_3
             ];
 
             shellHook = ''
