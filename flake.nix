@@ -24,8 +24,12 @@
             ];
 
             shellHook = ''
-              REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-              export PATH="$REPO_ROOT/scripts:$PATH"
+              if command -v git >/dev/null 2>&1; then
+                REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+                if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/scripts" ]; then
+                  export PATH="$REPO_ROOT/scripts:$PATH"
+                fi
+              fi
               export CC=${pkgs.gcc14}/bin/gcc
               export CXX=${pkgs.gcc14}/bin/g++
             '';

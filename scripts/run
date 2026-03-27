@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [[ $# -lt 1 ]]; then
-  echo "Usage: run <debug|release> [-- <args...>]" >&2
+  echo "Usage: run <debug|release> [args...]" >&2
   exit 1
 fi
 
@@ -18,14 +18,10 @@ case "${variant}" in
     ;;
   *)
     echo "Unknown build variant: ${variant}" >&2
-    echo "Usage: run <debug|release> [-- <args...>]" >&2
+    echo "Usage: run <debug|release> [args...]" >&2
     exit 1
     ;;
 esac
-
-if [[ "${1:-}" == "--" ]]; then
-  shift
-fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/.." && pwd)"
