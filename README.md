@@ -452,9 +452,7 @@ This repository provides a `flake.nix` with a dev shell containing GCC 14, CMake
 
 ```bash
 nix develop
-cmake -S . -B cmake_build -DCMAKE_BUILD_TYPE=Release
-cmake --build cmake_build
-ctest --test-dir cmake_build --output-on-failure
+./scripts/build_and_test.sh
 ```
 
 ## Unit Tests

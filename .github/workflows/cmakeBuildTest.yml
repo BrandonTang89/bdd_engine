@@ -25,7 +25,5 @@ jobs:
       - name: Build and test in flake dev shell
         run: |
           nix develop --command env BUILD_TYPE="$BUILD_TYPE" bash -lc '
-            cmake -S . -B cmake_build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-            cmake --build cmake_build --parallel
-            ctest --test-dir cmake_build --output-on-failure
+            ./scripts/build_and_test.sh
           '
