@@ -24,9 +24,9 @@ jobs:
 
       - name: Build and test in flake dev shell
         run: |
-          nix develop --command bash -lc '
+          nix develop --command env BUILD_TYPE="$BUILD_TYPE" bash -lc '
             conan profile detect --force
-            cmake -S . -B cmake_build -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=conan_provider.cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+            cmake -S . -B cmake_build -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=conan_provider.cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE
             cmake --build cmake_build --parallel
             ctest --test-dir cmake_build --output-on-failure
           '
