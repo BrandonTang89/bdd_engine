@@ -457,7 +457,8 @@ The shell also adds `scripts/` to `PATH`, so the following commands work from an
 
 ```bash
 nix develop
-./scripts/build_and_test.sh
+build release
+ctest --test-dir cmake_build_release --output-on-failure
 ```
 
 ## Unit Tests

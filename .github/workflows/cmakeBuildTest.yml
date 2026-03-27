@@ -8,6 +8,7 @@ on:
 
 env:
   BUILD_TYPE: Release
+  BUILD_DIR: cmake_build_release
 
 jobs:
   build:
@@ -25,5 +26,6 @@ jobs:
       - name: Build and test in flake dev shell
         run: |
           nix develop --command env BUILD_TYPE="$BUILD_TYPE" bash -lc '
-            ./scripts/build_and_test.sh
+            build release
+            ctest --test-dir "$BUILD_DIR" --output-on-failure
           '
