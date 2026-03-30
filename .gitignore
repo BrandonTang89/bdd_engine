@@ -1,2 +1,6 @@
 cmake-build-debug/
+cmake_build/
+cmake_build_debug/
+cmake_build_release/
 .clangd
+flake.lock

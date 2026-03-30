@@ -56,7 +56,27 @@ endif ()
 
 # Packages
 find_package(absl)
-find_package(Catch2)
+find_package(Catch2 3 REQUIRED)
+
+if(NOT TARGET abseil::abseil)
+    add_library(abseil::abseil INTERFACE IMPORTED)
+    set(_absl_components
+            absl::base
+            absl::hash
+            absl::strings
+            absl::flags
+            absl::flags_parse
+            absl::flags_usage
+            absl::log
+            absl::log_globals
+            absl::log_initialize
+    )
+    foreach(_absl_component IN LISTS _absl_components)
+        if(TARGET ${_absl_component})
+            target_link_libraries(abseil::abseil INTERFACE ${_absl_component})
+        endif()
+    endforeach()
+endif()
 
 add_executable(${PROJECT_NAME}
         src/main.cpp

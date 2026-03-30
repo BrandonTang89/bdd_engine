@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -lt 1 ]]; then
+  echo "Usage: build <debug|release>" >&2
+  exit 1
+fi
+
+variant="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+case "${variant}" in
+  debug)
+    build_type="Debug"
+    build_dir="cmake_build_debug"
+    ;;
+  release)
+    build_type="Release"
+    build_dir="cmake_build_release"
+    ;;
+  *)
+    echo "Unknown build variant: $1" >&2
+    echo "Usage: build <debug|release>" >&2
+    exit 1
+    ;;
+esac
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "${script_dir}/.." && pwd)"
+
+cmake -S "${repo_root}" -B "${repo_root}/${build_dir}" -DCMAKE_BUILD_TYPE="${build_type}"
+cmake --build "${repo_root}/${build_dir}" --parallel
