@@ -4,3 +4,4 @@ cmake_build_debug/
 cmake_build_release/
 .clangd
 flake.lock
+.direnv/
