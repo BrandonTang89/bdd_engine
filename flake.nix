@@ -35,12 +35,28 @@
           };
         });
 
-      apps = forAllSystems (system: {
-        default = {
-          type = "app";
-          program = "${self.packages.${system}.default}/bin/bdd_engine";
-        };
+      checks = forAllSystems (system: {
+        default = self.packages.${system}.default.overrideAttrs (oldAttrs: {
+          doCheck = true;
+          cmakeFlags = (oldAttrs.cmakeFlags or []) ++ [ "-Bcmake_build_release" ];
+          dontUseCmakeBuildDir = true;
+          buildPhase = "cmake --build cmake_build_release -j $NIX_BUILD_CORES";
+          checkPhase = "ctest --test-dir cmake_build_release";
+          installPhase = "cmake --install cmake_build_release --prefix $out";
+        });
       });
+
+      apps = forAllSystems (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in {
+          default = {
+            type = "app";
+            program = "${pkgs.writeShellScript "bdd_engine" ''
+              exec ${pkgs.rlwrap}/bin/rlwrap ${self.packages.${system}.default}/bin/bdd_engine "$@"
+            ''}";
+          };
+        });
 
       devShells = forAllSystems (system:
         let
@@ -50,6 +66,7 @@
             inputsFrom = [ self.packages.${system}.default ];
             packages = with pkgs; [
               gcc15
+              rlwrap
             ];
 
             shellHook = ''

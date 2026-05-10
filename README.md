@@ -482,6 +482,12 @@ To be able to use up and down arrow keys to use previous commands, use `rlwrap` 
 rlwrap ./bdd_engine
 ```
 
+This is wrapped automatically in the `nix run` command, so you can also just do
+```bash
+nix run
+```
+which will both build and run the REPL with `rlwrap`.
+
 ### Script Usage
 
 We can also pass a script file to the binary. The script file should be a valid script. The script file will be loaded

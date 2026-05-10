@@ -19,9 +19,6 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
 
-      - name: Build and test in flake dev shell
+      - name: Build and Test
         run: |
-          nix develop --command bash -lc '
-            build release
-            ctest --test-dir cmake_build_release --output-on-failure
-          '
+          nix flake check
