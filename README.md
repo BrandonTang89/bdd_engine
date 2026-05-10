@@ -442,13 +442,13 @@ The REPL and overall application are implemented by the following
 
 # Building and Dependencies
 
-Uses [CMake](https://cmake.org/) 3.31 and [Nix](https://nixos.org/) flakes, tested on [GCC](https://gcc.gnu.org/) 14.
+Uses [CMake](https://cmake.org/) 3.31 and [Nix](https://nixos.org/) flakes, tested on [GCC](https://gcc.gnu.org/) 15.
 
 Depends on [Abseil](https://github.com/abseil/abseil-cpp) and [Catch2](https://github.com/catchorg/Catch2).
 
 ## Nix Development Shell
 
-This repository provides a `flake.nix` with a dev shell containing GCC 14, CMake, Ninja, Abseil and Catch2.
+This repository provides a `flake.nix` with a dev shell containing GCC 15, CMake, Ninja, Abseil and Catch2.
 
 The shell also adds `scripts/` to `PATH`, so the following commands work from any directory inside the repository:
 

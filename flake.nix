@@ -7,14 +7,14 @@
 
   outputs = { self, nixpkgs, ... }:
     let
-      systems = [ "x86_64-linux" "aarch64-linux" ];
-      forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
+      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
+      forAllSystems = nixpkgs.lib.genAttrs systems;
     in {
       packages = forAllSystems (system:
         let
-          pkgs = import nixpkgs { inherit system; };
+          pkgs = nixpkgs.legacyPackages.${system};
         in {
-          default = pkgs.gcc14Stdenv.mkDerivation {
+          default = pkgs.gcc15Stdenv.mkDerivation {
             pname = "bdd_engine";
             version = "0.1.0";
             src = ./.;
@@ -44,12 +44,12 @@
 
       devShells = forAllSystems (system:
         let
-          pkgs = import nixpkgs { inherit system; };
+          pkgs = nixpkgs.legacyPackages.${system};
         in {
           default = pkgs.mkShell {
             inputsFrom = [ self.packages.${system}.default ];
             packages = with pkgs; [
-              gcc14
+              gcc15
             ];
 
             shellHook = ''
@@ -59,8 +59,8 @@
                   export PATH="$REPO_ROOT/scripts:$PATH"
                 fi
               fi
-              export CC=${pkgs.gcc14}/bin/gcc
-              export CXX=${pkgs.gcc14}/bin/g++
+              export CC=${pkgs.gcc15}/bin/gcc
+              export CXX=${pkgs.gcc15}/bin/g++
             '';
           };
         });
