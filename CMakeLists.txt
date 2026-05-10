@@ -113,3 +113,5 @@ add_executable(tests
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain abseil::abseil)
 add_test(NAME bdd_engine_tests COMMAND tests)
+
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
